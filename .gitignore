@@ -1,7 +1,40 @@
-# Python
+# ----------------------
+# Python / Virtual Env
+# ----------------------
 .venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
+# ----------------------
+# Machine Learning Artifacts
+# ----------------------
+data/models/
+data/csv/
+*.pkl
+*.joblib
+
+# ----------------------
+# Raw datasets (keep structure, not data)
+# ----------------------
+data/datasets/**/*
+!data/datasets/.gitkeep
+!data/datasets/**/.gitkeep
+
+# ----------------------
 # External projects
+# ----------------------
 external-projects/
+
+# ----------------------
+# VS Code / IDE
+# ----------------------
+.vscode/
+*.code-workspace
+
+# ----------------------
+# OS junk
+# ----------------------
+.DS_Store
+Thumbs.db
