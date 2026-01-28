@@ -3,39 +3,40 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = require("vscode");
+const htmlLoader_1 = require("./utils/htmlLoader");
 function activate(context) {
-    console.log("DevArchAI Extension activated");
-    const command = vscode.commands.registerCommand("devarchai.analyseProject", async () => {
+    const disposable = vscode.commands.registerCommand('devarchai.analyseProject', async () => {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) {
-            vscode.window.showErrorMessage("No project folder open");
+            vscode.window.showErrorMessage('No workspace folder open.');
             return;
         }
         const projectPath = workspaceFolders[0].uri.fsPath;
+        vscode.window.showInformationMessage('DevArchAI: Analysing project using ML model...');
         try {
-            const response = await fetch("http://127.0.0.1:8000/analyse", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    project_path: projectPath,
-                }),
+            const response = await fetch('http://localhost:8000/analyse', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_path: projectPath })
             });
             if (!response.ok) {
-                throw new Error(`HTTP error ${response.status}`);
+                throw new Error(`Backend error: ${response.statusText}`);
             }
-            // Explicitly type the response
-            const result = (await response.json());
-            vscode.window.showInformationMessage(`DevArchAI Analysis Complete. Root Risk: ${result.suspected_root_cause}`);
-            console.log("DevArchAI Result:", result);
+            const analysisResult = await response.json();
+            showRiskPanel(context, analysisResult);
         }
         catch (error) {
-            vscode.window.showErrorMessage("DevArchAI backend not reachable. Ensure backend is running.");
-            console.error(error);
+            vscode.window.showErrorMessage(`DevArchAI analysis failed: ${error.message}`);
         }
     });
-    context.subscriptions.push(command);
+    context.subscriptions.push(disposable);
 }
 function deactivate() { }
+/* --------------------------------------------------
+   WebView Panel
+--------------------------------------------------- */
+function showRiskPanel(context, analysisResult) {
+    const panel = vscode.window.createWebviewPanel('devarchaiRiskPanel', 'DevArchAI – ML Risk Analysis', vscode.ViewColumn.One, { enableScripts: true });
+    panel.webview.html = (0, htmlLoader_1.loadRiskHtml)(context, panel.webview, analysisResult);
+}
 //# sourceMappingURL=extension.js.map

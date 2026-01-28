@@ -1,28 +1,33 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List
 from pathlib import Path
 
 from core.analysis.service_detector import detect_microservices
-from pathlib import Path
 from core.analysis.dependency_graph import ServiceDependencyGraph
 from core.analysis.java_scanner import scan_java_dependencies
 from core.analysis.improvement_engine import generate_improvements
 from core.analysis.feature_extractor import extract_service_features
 from core.ml.inference import DevArchAIInferenceEngine
 
+# --------------------------------------------------
+# FastAPI App
+# --------------------------------------------------
+
 app = FastAPI(title="DevArchAI Core")
 
-# -------------------------------
+# --------------------------------------------------
 # Load ML model ONCE at startup
-# -------------------------------
+# --------------------------------------------------
+
 inference_engine = DevArchAIInferenceEngine(
     model_path=Path("data/models/devarchai_unified_model.pkl")
 )
 
-# -------------------------------
+# --------------------------------------------------
 # API Schemas
-# -------------------------------
+# --------------------------------------------------
+
 class AnalyseRequest(BaseModel):
     project_path: str
 
@@ -33,6 +38,17 @@ class RiskResult(BaseModel):
     risk_confidence: float
     reason: str
 
+
+class DependencyEdge(BaseModel):
+    from_service: str
+    to_service: str
+
+
+class DependencyGraph(BaseModel):
+    nodes: List[str]
+    edges: List[DependencyEdge]
+
+
 class AnalyseResponse(BaseModel):
     project_path: str
     detected_services: List[str]
@@ -40,11 +56,13 @@ class AnalyseResponse(BaseModel):
     explanation: str
     risk_analysis: List[RiskResult]
     improvements: List[str]
+    dependency_graph: DependencyGraph
 
 
-# -------------------------------
-# Health check
-# -------------------------------
+# --------------------------------------------------
+# Health Check
+# --------------------------------------------------
+
 @app.get("/")
 def health_check():
     return {
@@ -53,11 +71,13 @@ def health_check():
     }
 
 
-# -------------------------------
-# Core analysis endpoint
-# -------------------------------
+# --------------------------------------------------
+# Core Analysis Endpoint
+# --------------------------------------------------
+
 @app.post("/analyse", response_model=AnalyseResponse)
 def analyse_project(request: AnalyseRequest):
+
     # Step 1: Detect microservices
     services = detect_microservices(request.project_path)
 
@@ -72,7 +92,6 @@ def analyse_project(request: AnalyseRequest):
     for service in services[:5]:
         service_path = project_root / service
 
-        # PERFORMANCE GUARD:
         # Java scanning itself is already limited internally
         dependencies = scan_java_dependencies(service_path)
 
@@ -91,13 +110,25 @@ def analyse_project(request: AnalyseRequest):
         service_features=service_features
     )
 
-    # Step 5: Generate explainable improvement suggestions
+    # Step 5: Generate improvement suggestions
     improvements = generate_improvements(
         services=services,
         dependency_count=len(graph.get_edges())
     )
 
-    # Step 6: Return ML-driven response
+    # Step 6: Serialize dependency graph for frontend
+    dependency_graph = DependencyGraph(
+        nodes=graph.get_nodes(),
+        edges=[
+            DependencyEdge(
+                from_service=edge[0],
+                to_service=edge[1]
+            )
+            for edge in graph.get_edges()
+        ]
+    )
+
+    # Step 7: Return unified response
     return AnalyseResponse(
         project_path=request.project_path,
         detected_services=services,
@@ -110,5 +141,6 @@ def analyse_project(request: AnalyseRequest):
             "anomaly signals, and fault impact data."
         ),
         risk_analysis=risk_analysis,
-        improvements=improvements
+        improvements=improvements,
+        dependency_graph=dependency_graph
     )
