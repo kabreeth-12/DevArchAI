@@ -13,8 +13,8 @@ from core.analysis.feature_extractor import extract_service_features
 # -------------------------------
 # Risk label thresholds
 # -------------------------------
-HIGH_RISK_THRESHOLD = 4.5
-MEDIUM_RISK_THRESHOLD = 2.5
+HIGH_RISK_THRESHOLD = 3.2
+MEDIUM_RISK_THRESHOLD = 1.8
 
 
 def assign_risk_label(row: Dict[str, Any]) -> int:
@@ -39,7 +39,7 @@ def assign_risk_label(row: Dict[str, Any]) -> int:
 
     # Gateway amplification
     if row.get("is_gateway", 0.0) == 1.0:
-        score += 1.5
+        score += 2.0
 
     if score >= HIGH_RISK_THRESHOLD:
         return 2
@@ -86,8 +86,15 @@ def build_unified_dataset(
     if not rows:
         raise ValueError("No services found to build dataset.")
 
+    # Collect ALL possible fieldnames
+    fieldnames = set()
+    for row in rows:
+        fieldnames.update(row.keys())
+
+    fieldnames = sorted(fieldnames)
+
     with output_path.open(mode="w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
 

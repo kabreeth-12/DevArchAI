@@ -1,9 +1,12 @@
 import pandas as pd
 from pathlib import Path
+import joblib
+
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
-import joblib
 
 
 def train_unified_devarchai_model(
@@ -16,13 +19,19 @@ def train_unified_devarchai_model(
     - Runtime anomaly signals
     - Fault injection impact metrics
 
-    This model represents the full DevArchAI intelligence layer.
+    Improvements in this version:
+    - Feature normalization (StandardScaler)
+    - Better generalization for large microservice systems
+    - Pipeline-based training for safe inference
     """
 
     print("[DevArchAI] Loading unified dataset...")
     df = pd.read_csv(dataset_path)
 
-    # Unified feature set (STRUCTURAL + BEHAVIOURAL + FAULT)
+    # --------------------------------------------------
+    # Unified Feature Set (STRUCTURAL + BEHAVIOURAL + FAULT)
+    # --------------------------------------------------
+
     feature_columns = [
         # Structural
         "fan_in",
@@ -47,7 +56,10 @@ def train_unified_devarchai_model(
         "fault_impact_score",
     ]
 
+    # --------------------------------------------------
     # Ensure missing columns don’t break training
+    # --------------------------------------------------
+
     for col in feature_columns:
         if col not in df.columns:
             df[col] = 0.0
@@ -55,51 +67,80 @@ def train_unified_devarchai_model(
     X = df[feature_columns]
     y = df["risk_label"]
 
-    # Train / test split
+    # --------------------------------------------------
+    # Train / Test Split (Stratified)
+    # --------------------------------------------------
+
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y,
+        X,
+        y,
         test_size=0.25,
         random_state=42,
         stratify=y
     )
 
-    print("[DevArchAI] Training unified model...")
+    print("[DevArchAI] Training unified model with normalization...")
 
-    model = RandomForestClassifier(
-        n_estimators=300,
-        max_depth=12,
-        random_state=42,
-        class_weight="balanced"
-    )
+    # --------------------------------------------------
+    # ML Pipeline (KEY UPGRADE)
+    # --------------------------------------------------
 
-    model.fit(X_train, y_train)
+    pipeline = Pipeline([
+        ("scaler", StandardScaler()),
+        ("classifier", RandomForestClassifier(
+            n_estimators=300,
+            max_depth=12,
+            min_samples_split=5,
+            random_state=42,
+            class_weight="balanced",
+            n_jobs=-1
+        ))
+    ])
 
+    # --------------------------------------------------
+    # Train Model
+    # --------------------------------------------------
+
+    pipeline.fit(X_train, y_train)
+
+    # --------------------------------------------------
     # Evaluation
-    y_pred = model.predict(X_test)
+    # --------------------------------------------------
+
+    y_pred = pipeline.predict(X_test)
 
     print("\nAccuracy:", accuracy_score(y_test, y_pred))
     print("\nClassification Report:\n")
     print(classification_report(y_test, y_pred))
 
-    # Explainability
+    # --------------------------------------------------
+    # Explainability (Feature Importance)
+    # --------------------------------------------------
+
+    classifier = pipeline.named_steps["classifier"]
+
     importances = pd.Series(
-        model.feature_importances_,
+        classifier.feature_importances_,
         index=feature_columns
     ).sort_values(ascending=False)
 
     print("\nTop unified risk drivers:")
     print(importances.head(10))
 
-    # Save model
+    # --------------------------------------------------
+    # Save Model (Pipeline)
+    # --------------------------------------------------
+
     model_output_path.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(model, model_output_path)
+    joblib.dump(pipeline, model_output_path)
 
     print(f"\nUnified DevArchAI model saved to {model_output_path}")
 
 
-# -------------------------------
-# Script entry point
-# -------------------------------
+# --------------------------------------------------
+# Script Entry Point
+# --------------------------------------------------
+
 if __name__ == "__main__":
     train_unified_devarchai_model(
         dataset_path=Path("data/csv/structural_training_dataset.csv"),

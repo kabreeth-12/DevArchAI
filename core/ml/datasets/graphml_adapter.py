@@ -12,22 +12,33 @@ def load_graphml_dataset(
     Load a GraphML microservice dependency graph and
     extract service-level features for ML training.
 
-    Each node in the graph represents a service.
+    Each GraphML file represents ONE project.
     """
 
     if not graphml_path.exists():
         raise FileNotFoundError(f"GraphML file not found: {graphml_path}")
 
-    # Load graph
+    # 🔑 Project name from file
+    project = graphml_path.stem
+
     graph = nx.read_graphml(graphml_path)
 
-    # Ensure directed graph
     if not isinstance(graph, nx.DiGraph):
         graph = nx.DiGraph(graph)
 
     services = list(graph.nodes())
 
-    # Extract features using DevArchAI feature extractor
-    feature_map = extract_service_features(graph, services)
+    raw_features = extract_service_features(graph, services)
 
-    return feature_map
+    scoped_features: Dict[str, Dict[str, float]] = {}
+
+    for service, feats in raw_features.items():
+        # 🔑 THIS is the critical fix
+        service_id = f"{project}::{service}"
+
+        scoped_features[service_id] = {
+            **feats,
+            "project": project
+        }
+
+    return scoped_features
