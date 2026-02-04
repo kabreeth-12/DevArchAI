@@ -47,36 +47,39 @@ class DevArchAIInferenceEngine:
         """
         Generate a human-readable explanation for the predicted risk.
         """
+        return generate_reason(features, risk_level)
 
-        reasons = []
 
-        if features.get("betweenness_centrality", 0.0) > 0.3:
-            reasons.append(
-                "high betweenness centrality indicates the service is a critical communication hub"
-            )
+def generate_reason(features: Dict[str, float], risk_level: int) -> str:
+    reasons = []
 
-        if features.get("fan_in", 0.0) > 3:
-            reasons.append(
-                "high fan-in suggests tight coupling with multiple dependent services"
-            )
+    if features.get("betweenness_centrality", 0.0) > 0.3:
+        reasons.append(
+            "high betweenness centrality indicates the service is a critical communication hub"
+        )
 
-        if features.get("dependency_depth", 0.0) > 2:
-            reasons.append(
-                "deep dependency chains increase fault propagation risk"
-            )
+    if features.get("fan_in", 0.0) > 3:
+        reasons.append(
+            "high fan-in suggests tight coupling with multiple dependent services"
+        )
 
-        if features.get("is_gateway", 0.0) == 1.0:
-            reasons.append(
-                "service acts as an API Gateway and may represent a single point of failure"
-            )
+    if features.get("dependency_depth", 0.0) > 2:
+        reasons.append(
+            "deep dependency chains increase fault propagation risk"
+        )
 
-        if not reasons:
-            reasons.append(
-                "low structural complexity and absence of anomaly or fault signals"
-            )
+    if features.get("is_gateway", 0.0) == 1.0:
+        reasons.append(
+            "service acts as an API Gateway and may represent a single point of failure"
+        )
 
-        labels = {0: "Low risk", 1: "Medium risk", 2: "High risk"}
-        return f"{labels[risk_level]} due to " + ", ".join(reasons)
+    if not reasons:
+        reasons.append(
+            "low structural complexity and absence of anomaly or fault signals"
+        )
+
+    labels = {0: "Low risk", 1: "Medium risk", 2: "High risk"}
+    return f"{labels[risk_level]} due to " + ", ".join(reasons)
 
     def predict_service_risk(
         self,

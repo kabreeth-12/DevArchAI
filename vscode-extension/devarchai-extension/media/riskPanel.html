@@ -78,6 +78,9 @@
        DEPENDENCY GRAPH SECTION
        =============================== -->
 
+  <h2>RCA Summary</h2>
+  <div id="rca-summary" class="card"></div>
+
   <h2>Service Dependency Graph</h2>
   <div id="dependency-graph"></div>
 
@@ -111,11 +114,34 @@
         <h3>${item.service}</h3>
         <p><b>Risk Level:</b> ${label}</p>
         <p><b>Model Confidence:</b> ${confidence}%</p>
+        ${item.model ? `<p><b>Model:</b> ${item.model}</p>` : ''}
         <p class="reason">${item.reason}</p>
       `;
 
       container.appendChild(card);
     });
+
+    /* --------------------------------
+       Render RCA Summary
+    --------------------------------- */
+
+    const rcaPanel = document.getElementById('rca-summary');
+    if (data.rca_summary) {
+      const rcaConfidence = Math.round((data.rca_confidence || 0) * 100);
+      const refs = (data.rca_references || []).slice(0, 5);
+      const refsHtml = refs.length
+        ? `<ul>${refs.map(r => `<li>${r}</li>`).join('')}</ul>`
+        : '<p>No references available.</p>';
+
+      rcaPanel.innerHTML = `
+        <p><b>Summary:</b> ${data.rca_summary}</p>
+        <p><b>Confidence:</b> ${rcaConfidence}%</p>
+        <p><b>LLM Used:</b> ${data.rca_llm_used ? 'Yes' : 'No'}</p>
+        <div><b>References:</b> ${refsHtml}</div>
+      `;
+    } else {
+      rcaPanel.innerHTML = '<p>No RCA data available.</p>';
+    }
 
     /* --------------------------------
        Render Dependency Graph

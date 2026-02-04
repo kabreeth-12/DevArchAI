@@ -9,6 +9,7 @@ from core.analysis.java_scanner import scan_java_dependencies
 from core.analysis.improvement_engine import generate_improvements
 from core.analysis.feature_extractor import extract_service_features
 from core.ml.inference import DevArchAIInferenceEngine
+from core.ml.gnn_inference import DevArchAIGnnInferenceEngine
 from core.ml.llm_client import LlmClient
 from core.ml.rca_rag import RcaRagEngine
 
@@ -26,6 +27,14 @@ inference_engine = DevArchAIInferenceEngine(
     model_path=Path("data/models/devarchai_unified_model.pkl")
 )
 
+gnn_inference_engine = None
+try:
+    gnn_inference_engine = DevArchAIGnnInferenceEngine(
+        model_path=Path("data/models/devarchai_gnn_model.pt")
+    )
+except Exception:
+    gnn_inference_engine = None
+
 rca_engine = RcaRagEngine(
     llm_client=LlmClient()
 )
@@ -37,6 +46,7 @@ rca_engine = RcaRagEngine(
 class AnalyseRequest(BaseModel):
     project_path: str
     log_path: Optional[str] = None
+    use_gnn: bool = False
 
 
 class RiskResult(BaseModel):
@@ -44,6 +54,7 @@ class RiskResult(BaseModel):
     predicted_risk_level: int
     risk_confidence: float
     reason: str
+    model: Optional[str] = None
 
 
 class DependencyEdge(BaseModel):
@@ -117,9 +128,15 @@ def analyse_project(request: AnalyseRequest):
     )
 
     # Step 4: ML-based risk inference
-    risk_analysis = inference_engine.predict_service_risk(
-        service_features=service_features
-    )
+    if request.use_gnn and gnn_inference_engine is not None:
+        risk_analysis = gnn_inference_engine.predict_service_risk(
+            graph=graph.graph,
+            service_features=service_features
+        )
+    else:
+        risk_analysis = inference_engine.predict_service_risk(
+            service_features=service_features
+        )
 
     # Step 5: Generate improvement suggestions
     improvements = generate_improvements(

@@ -19,11 +19,20 @@ export function activate(context: vscode.ExtensionContext) {
         'DevArchAI: Analysing project using ML model...'
       );
 
+      const logPath = await vscode.window.showInputBox({
+        prompt: 'Optional log path for RCA (leave empty to skip)',
+        placeHolder: 'e.g. D:\\logs or ./logs'
+      });
+
       try {
         const response = await fetch('http://localhost:8000/analyse', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ project_path: projectPath })
+          body: JSON.stringify({
+            project_path: projectPath,
+            log_path: logPath || null,
+            use_gnn: true
+          })
         });
 
         if (!response.ok) {
