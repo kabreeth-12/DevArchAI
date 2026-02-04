@@ -124,8 +124,8 @@ def analyse_project(request: AnalyseRequest):
     project_root = Path(request.project_path)
 
     # PERFORMANCE GUARD:
-    # Limit number of services analysed
-    for service in services[:5]:
+    # Analyse all detected services (can be limited later if needed)
+    for service in services:
         service_path = project_root / service
 
         # Java scanning itself is already limited internally
