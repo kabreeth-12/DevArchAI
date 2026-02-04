@@ -33,6 +33,7 @@ external-projects/
 # ----------------------
 .vscode/
 *.code-workspace
+vscode-extension/devarchai-extension/out/
 
 # ----------------------
 # OS junk
