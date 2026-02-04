@@ -13,6 +13,8 @@ from core.ml.gnn_inference import DevArchAIGnnInferenceEngine
 from core.ml.llm_client import LlmClient
 from core.ml.rca_rag import RcaRagEngine
 
+import math
+
 # --------------------------------------------------
 # FastAPI App
 # --------------------------------------------------
@@ -79,6 +81,18 @@ class AnalyseResponse(BaseModel):
     risk_analysis: List[RiskResult]
     improvements: List[str]
     dependency_graph: DependencyGraph
+
+
+def _sanitize_value(value):
+    if isinstance(value, float):
+        if math.isnan(value) or math.isinf(value):
+            return 0.0
+        return value
+    if isinstance(value, dict):
+        return {k: _sanitize_value(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_sanitize_value(v) for v in value]
+    return value
 
 
 # --------------------------------------------------
@@ -181,7 +195,7 @@ def analyse_project(request: AnalyseRequest):
             rca_llm_used = False
 
     # Step 8: Return unified response
-    return AnalyseResponse(
+    response_payload = AnalyseResponse(
         project_path=request.project_path,
         detected_services=services,
         suspected_root_cause=(
@@ -200,3 +214,6 @@ def analyse_project(request: AnalyseRequest):
         improvements=improvements,
         dependency_graph=dependency_graph
     )
+
+    # Guard against NaN/Inf in JSON serialization
+    return _sanitize_value(response_payload.dict())
