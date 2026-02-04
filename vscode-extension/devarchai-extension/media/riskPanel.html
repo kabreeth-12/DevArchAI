@@ -2,211 +2,156 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>DevArchAI – Risk Analysis</title>
-
-  <!-- Cytoscape for Dependency Graph -->
-  <script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+  <title>DevArchAI - Risk Analysis</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: __WEBVIEW_CSP__; style-src __WEBVIEW_CSP__ https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data: __WEBVIEW_CSP__; script-src __WEBVIEW_CSP__ 'nonce-__CSP_NONCE__';">
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg-1: #0f1117;
+      --panel: #1b1f2b;
+      --card: #121520;
+      --muted: #a8b0c3;
+      --text: #e9edf7;
+      --accent: #4de1ff;
+      --accent-2: #7c5cff;
+      --stroke: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      padding: 16px;
+      font-family: 'Space Grotesk', sans-serif;
+      background: radial-gradient(1200px 600px at 10% 10%, #1c2130 0%, var(--bg-1) 55%, #0b0d13 100%);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
     }
 
-    h1 {
-      margin-bottom: 6px;
+    h1 { margin: 0 0 6px 0; font-size: 28px; }
+    h2 { margin-top: 28px; margin-bottom: 10px; font-size: 18px; color: #dfe6ff; }
+
+    .subtitle { color: var(--muted); margin-bottom: 18px; }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(124,92,255,0.18), rgba(77,225,255,0.08));
+      border: 1px solid var(--stroke);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
     }
 
-    h2 {
-      margin-top: 28px;
-      margin-bottom: 8px;
+    .hero-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+      padding: 6px 10px; border: 1px solid var(--stroke); border-radius: 999px;
+      color: var(--muted); background: rgba(255,255,255,0.03);
     }
 
-    .subtitle {
-      color: #666;
-      margin-bottom: 16px;
-    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
 
     .card {
-      background: #f9f9f9;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 6px;
-      border-left: 6px solid #ccc;
+      background: linear-gradient(180deg, #131826 0%, #0f131f 100%);
+      padding: 14px; border-radius: 12px; border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+    }
+    .card.high { border: 1px solid rgba(255,107,107,0.5); }
+    .card.medium { border: 1px solid rgba(255,179,71,0.5); }
+    .card.low { border: 1px solid rgba(61,220,151,0.45); }
+
+    .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; color: var(--muted); font-size: 12px; }
+
+    .metric {
+      font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #bcd0ff;
+      background: rgba(124,92,255,0.15); border: 1px solid rgba(124,92,255,0.35);
+      padding: 4px 8px; border-radius: 6px;
     }
 
-    .high { border-left-color: #d9534f; }
-    .medium { border-left-color: #f0ad4e; }
-    .low { border-left-color: #5cb85c; }
+    .risk-badge {
+      display: inline-flex; align-items: center; padding: 4px 8px;
+      border-radius: 999px; font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase;
+    }
+    .risk-high { background: rgba(255,107,107,0.15); color: #ff9b9b; border: 1px solid rgba(255,107,107,0.4); }
+    .risk-medium { background: rgba(255,179,71,0.15); color: #ffd39c; border: 1px solid rgba(255,179,71,0.4); }
+    .risk-low { background: rgba(61,220,151,0.15); color: #a9f3d2; border: 1px solid rgba(61,220,151,0.35); }
 
-    .reason {
-      margin-top: 8px;
-      font-style: italic;
+    .rca-panel {
+      background: linear-gradient(180deg, #141a2a 0%, #0f1320 100%);
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: var(--shadow);
     }
 
     #dependency-graph {
-      width: 100%;
-      height: 420px;
-      border: 1px solid #ccc;
-      margin-top: 12px;
-      border-radius: 6px;
+      width: 100%; height: 520px; border: 1px solid var(--stroke);
+      margin-top: 12px; border-radius: 12px;
+      background: radial-gradient(800px 400px at 20% 20%, #1a2234 0%, #0f1320 60%, #0b0f1a 100%);
+      box-shadow: var(--shadow);
+      display: flex; align-items: center; justify-content: center;
+      color: #94a3b8;
+      font-size: 12px;
     }
 
-    footer {
-      margin-top: 28px;
-      font-size: 12px;
-      color: #777;
-      text-align: center;
-    }
+    footer { margin-top: 28px; font-size: 12px; color: var(--muted); text-align: center; }
   </style>
 </head>
 
 <body>
-
-  <h1>DevArchAI – Architectural Risk Analysis</h1>
+  <h1>DevArchAI - Architectural Risk Analysis</h1>
   <div class="subtitle">
     Risk levels and confidence scores generated by the trained DevArchAI machine learning model.
   </div>
 
-  <!-- ===============================
-       ML RISK ANALYSIS SECTION
-       =============================== -->
+  <div class="hero">
+    <div class="pill">Live Inference • Prototype • UI v4</div>
+    <div class="hero-grid" style="margin-top:10px;">
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;color:var(--muted);">Most Critical Service</div>
+        <div id="hero-service" style="font-size:18px; font-weight:600;">—</div>
+        <div class="meta">
+          <span class="metric" id="hero-risk">Risk: —</span>
+          <span class="metric" id="hero-confidence">Conf: —</span>
+          <span class="metric" id="hero-model">Model: —</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;color:var(--muted);">Services Analysed</div>
+        <div id="hero-count" style="font-size:20px; font-weight:600;">0</div>
+      </div>
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;color:var(--muted);">RCA Status</div>
+        <div id="hero-rca" style="font-size:16px; font-weight:600;">Pending</div>
+      </div>
+    </div>
+    <div id="debug-status" class="meta" style="margin-top:10px;">
+      <span class="metric">Debug: UI loaded</span>
+    </div>
+  </div>
 
-  <div id="risk-container"></div>
+  <div>
+    <h2>Risk Breakdown</h2>
+    <div id="risk-container" class="grid"></div>
+  </div>
 
-  <!-- ===============================
-       DEPENDENCY GRAPH SECTION
-       =============================== -->
+  <div>
+    <h2>RCA Summary</h2>
+    <div id="rca-summary" class="rca-panel"></div>
+  </div>
 
-  <h2>RCA Summary</h2>
-  <div id="rca-summary" class="card"></div>
-
-  <h2>Service Dependency Graph</h2>
-  <div id="dependency-graph"></div>
+  <div>
+    <h2>Service Dependency Graph</h2>
+    <div id="dependency-graph">No graph data available.</div>
+  </div>
 
   <footer>
     ML-Driven • Dependency-Aware • Explainable
   </footer>
 
-  <!-- ===============================
-       SCRIPT
-       =============================== -->
-
-  <script>
-    const data = __DEVARCHAI_DATA__;
-
-    /* --------------------------------
-       Render ML Risk Cards
-    --------------------------------- */
-
-    const container = document.getElementById('risk-container');
-
-    data.risk_analysis.forEach(item => {
-      const level = item.predicted_risk_level;
-      const label = level === 2 ? 'HIGH' : level === 1 ? 'MEDIUM' : 'LOW';
-      const cls = level === 2 ? 'high' : level === 1 ? 'medium' : 'low';
-      const confidence = Math.round(item.risk_confidence * 100);
-
-      const card = document.createElement('div');
-      card.className = `card ${cls}`;
-
-      card.innerHTML = `
-        <h3>${item.service}</h3>
-        <p><b>Risk Level:</b> ${label}</p>
-        <p><b>Model Confidence:</b> ${confidence}%</p>
-        ${item.model ? `<p><b>Model:</b> ${item.model}</p>` : ''}
-        <p class="reason">${item.reason}</p>
-      `;
-
-      container.appendChild(card);
-    });
-
-    /* --------------------------------
-       Render RCA Summary
-    --------------------------------- */
-
-    const rcaPanel = document.getElementById('rca-summary');
-    if (data.rca_summary) {
-      const rcaConfidence = Math.round((data.rca_confidence || 0) * 100);
-      const refs = (data.rca_references || []).slice(0, 5);
-      const refsHtml = refs.length
-        ? `<ul>${refs.map(r => `<li>${r}</li>`).join('')}</ul>`
-        : '<p>No references available.</p>';
-
-      rcaPanel.innerHTML = `
-        <p><b>Summary:</b> ${data.rca_summary}</p>
-        <p><b>Confidence:</b> ${rcaConfidence}%</p>
-        <p><b>LLM Used:</b> ${data.rca_llm_used ? 'Yes' : 'No'}</p>
-        <div><b>References:</b> ${refsHtml}</div>
-      `;
-    } else {
-      rcaPanel.innerHTML = '<p>No RCA data available.</p>';
-    }
-
-    /* --------------------------------
-       Render Dependency Graph
-    --------------------------------- */
-
-    if (data.dependency_graph) {
-
-      const elements = [];
-
-      // Nodes
-      data.dependency_graph.nodes.forEach(service => {
-        elements.push({
-          data: {
-            id: service,
-            label: service
-          }
-        });
-      });
-
-      // Edges
-      data.dependency_graph.edges.forEach(edge => {
-        elements.push({
-          data: {
-            source: edge.from_service,
-            target: edge.to_service
-          }
-        });
-      });
-
-      cytoscape({
-        container: document.getElementById('dependency-graph'),
-        elements: elements,
-        style: [
-          {
-            selector: 'node',
-            style: {
-              'label': 'data(label)',
-              'background-color': '#007acc',
-              'color': '#ffffff',
-              'text-valign': 'center',
-              'text-halign': 'center',
-              'font-size': '10px',
-              'padding': '8px',
-              'width': 'label'
-            }
-          },
-          {
-            selector: 'edge',
-            style: {
-              'width': 2,
-              'line-color': '#999',
-              'target-arrow-color': '#999',
-              'target-arrow-shape': 'triangle',
-              'curve-style': 'bezier'
-            }
-          }
-        ],
-        layout: {
-          name: 'breadthfirst',
-          directed: true,
-          padding: 10
-        }
-      });
-    }
-  </script>
-
+  <script id="devarchai-data" type="application/json" nonce="__CSP_NONCE__">__DEVARCHAI_DATA__</script>
+  <script nonce="__CSP_NONCE__" src="__SCRIPT_URI__"></script>
 </body>
 </html>

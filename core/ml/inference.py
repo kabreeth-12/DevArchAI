@@ -4,6 +4,38 @@ from pathlib import Path
 from typing import Dict, List
 
 
+def generate_reason(features: Dict[str, float], risk_level: int) -> str:
+    reasons = []
+
+    if features.get("betweenness_centrality", 0.0) > 0.3:
+        reasons.append(
+            "high betweenness centrality indicates the service is a critical communication hub"
+        )
+
+    if features.get("fan_in", 0.0) > 3:
+        reasons.append(
+            "high fan-in suggests tight coupling with multiple dependent services"
+        )
+
+    if features.get("dependency_depth", 0.0) > 2:
+        reasons.append(
+            "deep dependency chains increase fault propagation risk"
+        )
+
+    if features.get("is_gateway", 0.0) == 1.0:
+        reasons.append(
+            "service acts as an API Gateway and may represent a single point of failure"
+        )
+
+    if not reasons:
+        reasons.append(
+            "low structural complexity and absence of anomaly or fault signals"
+        )
+
+    labels = {0: "Low risk", 1: "Medium risk", 2: "High risk"}
+    return f"{labels[risk_level]} due to " + ", ".join(reasons)
+
+
 class DevArchAIInferenceEngine:
     """
     Loads trained DevArchAI models and performs
@@ -49,38 +81,6 @@ class DevArchAIInferenceEngine:
         """
         return generate_reason(features, risk_level)
 
-
-def generate_reason(features: Dict[str, float], risk_level: int) -> str:
-    reasons = []
-
-    if features.get("betweenness_centrality", 0.0) > 0.3:
-        reasons.append(
-            "high betweenness centrality indicates the service is a critical communication hub"
-        )
-
-    if features.get("fan_in", 0.0) > 3:
-        reasons.append(
-            "high fan-in suggests tight coupling with multiple dependent services"
-        )
-
-    if features.get("dependency_depth", 0.0) > 2:
-        reasons.append(
-            "deep dependency chains increase fault propagation risk"
-        )
-
-    if features.get("is_gateway", 0.0) == 1.0:
-        reasons.append(
-            "service acts as an API Gateway and may represent a single point of failure"
-        )
-
-    if not reasons:
-        reasons.append(
-            "low structural complexity and absence of anomaly or fault signals"
-        )
-
-    labels = {0: "Low risk", 1: "Medium risk", 2: "High risk"}
-    return f"{labels[risk_level]} due to " + ", ".join(reasons)
-
     def predict_service_risk(
         self,
         service_features: Dict[str, Dict[str, float]]
@@ -90,9 +90,6 @@ def generate_reason(features: Dict[str, float], risk_level: int) -> str:
         and return ranked, explainable results.
         """
 
-        # --------------------------------------------------
-        # Graceful handling of empty input
-        # --------------------------------------------------
         if not service_features:
             return []
 
@@ -102,7 +99,6 @@ def generate_reason(features: Dict[str, float], risk_level: int) -> str:
         for service, features in service_features.items():
             row = {}
 
-            # 🔒 Ensure ALL model features exist (schema enforcement)
             for feature in self.MODEL_FEATURES:
                 row[feature] = features.get(feature, 0.0)
 
@@ -110,12 +106,8 @@ def generate_reason(features: Dict[str, float], risk_level: int) -> str:
             rows.append(row)
             services.append(service)
 
-        # --------------------------------------------------
-        # Build DataFrame with enforced schema
-        # --------------------------------------------------
         df = pd.DataFrame(rows)
 
-        # Force expected columns to exist even if empty
         df = df.reindex(
             columns=self.MODEL_FEATURES + ["service"],
             fill_value=0.0
@@ -126,9 +118,6 @@ def generate_reason(features: Dict[str, float], risk_level: int) -> str:
 
         X = df[self.MODEL_FEATURES]
 
-        # --------------------------------------------------
-        # ML inference
-        # --------------------------------------------------
         predictions = self.model.predict(X)
         probabilities = self.model.predict_proba(X)
 
@@ -145,7 +134,6 @@ def generate_reason(features: Dict[str, float], risk_level: int) -> str:
                 )
             })
 
-        # Rank by severity and confidence
         results.sort(
             key=lambda x: (x["predicted_risk_level"], x["risk_confidence"]),
             reverse=True
