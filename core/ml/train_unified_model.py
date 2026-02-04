@@ -48,6 +48,14 @@ def train_unified_devarchai_model(
 
         # Behavioural
         "anomaly_rate",
+        "error_rate",
+        "req_rate",
+        "req_ok",
+        "req_ko",
+        "perc95_rt",
+        "avg_rt",
+        "avg_ok_rt",
+        "avg_ko_rt",
         "kaggle_anomaly_rate",
 
         # Fault impact

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 
 from core.analysis.service_detector import detect_microservices
@@ -9,6 +9,8 @@ from core.analysis.java_scanner import scan_java_dependencies
 from core.analysis.improvement_engine import generate_improvements
 from core.analysis.feature_extractor import extract_service_features
 from core.ml.inference import DevArchAIInferenceEngine
+from core.ml.llm_client import LlmClient
+from core.ml.rca_rag import RcaRagEngine
 
 # --------------------------------------------------
 # FastAPI App
@@ -24,12 +26,17 @@ inference_engine = DevArchAIInferenceEngine(
     model_path=Path("data/models/devarchai_unified_model.pkl")
 )
 
+rca_engine = RcaRagEngine(
+    llm_client=LlmClient()
+)
+
 # --------------------------------------------------
 # API Schemas
 # --------------------------------------------------
 
 class AnalyseRequest(BaseModel):
     project_path: str
+    log_path: Optional[str] = None
 
 
 class RiskResult(BaseModel):
@@ -54,6 +61,10 @@ class AnalyseResponse(BaseModel):
     detected_services: List[str]
     suspected_root_cause: str
     explanation: str
+    rca_summary: str
+    rca_confidence: float
+    rca_references: List[str]
+    rca_llm_used: bool
     risk_analysis: List[RiskResult]
     improvements: List[str]
     dependency_graph: DependencyGraph
@@ -128,7 +139,31 @@ def analyse_project(request: AnalyseRequest):
         ]
     )
 
-    # Step 7: Return unified response
+    # Step 7: RCA via RAG + LLM (optional)
+    rca_summary = "RCA not available (no log path provided)."
+    rca_confidence = 0.0
+    rca_references: List[str] = []
+    rca_llm_used = False
+
+    if request.log_path:
+        try:
+            rca_engine.build_index(Path(request.log_path))
+            question = (
+                f"Identify root cause for service "
+                f"{risk_analysis[0]['service'] if risk_analysis else 'unknown'}."
+            )
+            rca_result = rca_engine.analyse(question=question, top_k=5)
+            rca_summary = rca_result.summary
+            rca_confidence = rca_result.confidence
+            rca_references = rca_result.references
+            rca_llm_used = rca_result.llm_used
+        except Exception as exc:
+            rca_summary = f"RCA failed: {exc}"
+            rca_confidence = 0.0
+            rca_references = []
+            rca_llm_used = False
+
+    # Step 8: Return unified response
     return AnalyseResponse(
         project_path=request.project_path,
         detected_services=services,
@@ -140,6 +175,10 @@ def analyse_project(request: AnalyseRequest):
             "machine learning model combining dependency structure, "
             "anomaly signals, and fault impact data."
         ),
+        rca_summary=rca_summary,
+        rca_confidence=rca_confidence,
+        rca_references=rca_references,
+        rca_llm_used=rca_llm_used,
         risk_analysis=risk_analysis,
         improvements=improvements,
         dependency_graph=dependency_graph
