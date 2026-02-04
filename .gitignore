@@ -38,3 +38,8 @@ external-projects/
 # ----------------------
 .DS_Store
 Thumbs.db
+
+# ----------------------
+# Generated architecture graphs
+# ----------------------
+data/graphml/

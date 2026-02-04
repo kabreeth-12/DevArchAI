@@ -79,13 +79,19 @@ class DevArchAIInferenceEngine:
         and return ranked, explainable results.
         """
 
+        # --------------------------------------------------
+        # Graceful handling of empty input
+        # --------------------------------------------------
+        if not service_features:
+            return []
+
         rows = []
         services = []
 
         for service, features in service_features.items():
             row = {}
 
-            # 🔒 Ensure ALL model features exist
+            # 🔒 Ensure ALL model features exist (schema enforcement)
             for feature in self.MODEL_FEATURES:
                 row[feature] = features.get(feature, 0.0)
 
@@ -93,9 +99,25 @@ class DevArchAIInferenceEngine:
             rows.append(row)
             services.append(service)
 
+        # --------------------------------------------------
+        # Build DataFrame with enforced schema
+        # --------------------------------------------------
         df = pd.DataFrame(rows)
+
+        # Force expected columns to exist even if empty
+        df = df.reindex(
+            columns=self.MODEL_FEATURES + ["service"],
+            fill_value=0.0
+        )
+
+        if df.empty:
+            return []
+
         X = df[self.MODEL_FEATURES]
 
+        # --------------------------------------------------
+        # ML inference
+        # --------------------------------------------------
         predictions = self.model.predict(X)
         probabilities = self.model.predict_proba(X)
 
