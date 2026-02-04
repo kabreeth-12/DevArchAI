@@ -6,6 +6,7 @@ from typing import Dict, Any
 from core.ml.datasets.graphml_adapter import load_graphml_dataset
 from core.ml.datasets.ad_microservice_adapter import load_ad_microservice_fault_signals
 from core.ml.datasets.kaggle_log_adapter import load_kaggle_log_anomaly_signals
+from core.ml.datasets.metrics_adapter import load_metrics_telemetry
 
 from core.analysis.feature_extractor import extract_service_features
 
@@ -54,6 +55,7 @@ def build_unified_dataset(
     graph_features: Dict[str, Dict[str, float]],
     fault_features: Dict[str, Dict[str, float]],
     kaggle_features: Dict[str, Dict[str, float]],
+    metrics_features: Dict[str, Dict[str, float]],
     output_path: Path
 ):
     """
@@ -66,11 +68,14 @@ def build_unified_dataset(
         set(graph_features.keys())
         | set(fault_features.keys())
         | set(kaggle_features.keys())
+        | set(metrics_features.keys())
     )
 
     rows = []
 
     for service in all_services:
+        service_short = service.split("::")[-1]
+
         row = {
             "project": project_name,
             "service": service,
@@ -79,6 +84,8 @@ def build_unified_dataset(
         row.update(graph_features.get(service, {}))
         row.update(fault_features.get(service, {}))
         row.update(kaggle_features.get(service, {}))
+        row.update(metrics_features.get(service, {}))
+        row.update(metrics_features.get(service_short, {}))
 
         row["risk_label"] = assign_risk_label(row)
         rows.append(row)
@@ -129,6 +136,12 @@ if __name__ == "__main__":
     )
     print("[DevArchAI] Loaded Kaggle anomaly data")
 
+    # 4) Load telemetry metrics
+    metrics_features = load_metrics_telemetry(
+        Path("data/datasets/metrics/20-05-2024_metrics.csv")
+    )
+    print("[DevArchAI] Loaded telemetry metrics data")
+
     # 4️⃣ Build dataset
     output_file = Path("data/csv/structural_training_dataset.csv")
 
@@ -137,6 +150,7 @@ if __name__ == "__main__":
         graph_features=graph_features,
         fault_features=fault_features,
         kaggle_features=kaggle_features,
+        metrics_features=metrics_features,
         output_path=output_file
     )
 

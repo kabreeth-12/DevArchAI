@@ -1,10 +1,11 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 import networkx as nx
 
 
 def extract_service_features(
     graph: nx.DiGraph,
-    services: List[str]
+    services: List[str],
+    telemetry_features: Optional[Dict[str, Dict[str, float]]] = None
 ) -> Dict[str, Dict[str, float]]:
     """
     Extract root-cause-oriented features for each service.
@@ -100,5 +101,13 @@ def extract_service_features(
             "avg_affected_services": avg_affected_services,
             "fault_impact_score": fault_impact_score,
         }
+
+        # --------------------------------------------------
+        # Telemetry overrides (real signals if available)
+        # --------------------------------------------------
+        if telemetry_features:
+            features[service].update(
+                telemetry_features.get(service, {})
+            )
 
     return features
