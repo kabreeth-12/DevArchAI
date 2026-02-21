@@ -12,6 +12,7 @@ from core.ml.inference import DevArchAIInferenceEngine
 from core.ml.gnn_inference import DevArchAIGnnInferenceEngine
 from core.ml.llm_client import LlmClient
 from core.ml.rca_rag import RcaRagEngine
+from core.telemetry import fetch_prometheus_metrics, fetch_traces_otel
 from core.cicd.loader import load_payload
 from core.cicd.github_actions_adapter import parse_github_actions
 from core.cicd.gitlab_adapter import parse_gitlab
@@ -53,6 +54,8 @@ class AnalyseRequest(BaseModel):
     project_path: str
     log_path: Optional[str] = None
     use_gnn: bool = False
+    prometheus_url: Optional[str] = None
+    otel_endpoint: Optional[str] = None
 
 
 class CicdIngestRequest(BaseModel):
@@ -168,13 +171,33 @@ def analyse_project(request: AnalyseRequest):
             if dep in services:
                 graph.add_dependency(service, dep)
 
-    # Step 3: Extract ML features from dependency graph
+    # Step 3: Fetch telemetry (metrics + traces), if configured
+    telemetry_features = {}
+
+    if request.prometheus_url:
+        try:
+            telemetry_features.update(
+                fetch_prometheus_metrics(request.prometheus_url)
+            )
+        except Exception:
+            pass
+
+    if request.otel_endpoint:
+        try:
+            telemetry_features.update(
+                fetch_traces_otel(request.otel_endpoint)
+            )
+        except Exception:
+            pass
+
+    # Step 4: Extract ML features from dependency graph + telemetry
     service_features = extract_service_features(
         graph.graph,
-        services
+        services,
+        telemetry_features=telemetry_features
     )
 
-    # Step 4: ML-based risk inference
+    # Step 5: ML-based risk inference
     if request.use_gnn and gnn_inference_engine is not None:
         risk_analysis = gnn_inference_engine.predict_service_risk(
             graph=graph.graph,
@@ -185,13 +208,13 @@ def analyse_project(request: AnalyseRequest):
             service_features=service_features
         )
 
-    # Step 5: Generate improvement suggestions
+    # Step 6: Generate improvement suggestions
     improvements = generate_improvements(
         services=services,
         dependency_count=len(graph.get_edges())
     )
 
-    # Step 6: Serialize dependency graph for frontend
+    # Step 7: Serialize dependency graph for frontend
     dependency_graph = DependencyGraph(
         nodes=graph.get_nodes(),
         edges=[
@@ -203,7 +226,7 @@ def analyse_project(request: AnalyseRequest):
         ]
     )
 
-    # Step 7: RCA via RAG + LLM (optional)
+    # Step 8: RCA via RAG + LLM (optional)
     rca_summary = "RCA not available (no log path provided)."
     rca_confidence = 0.0
     rca_references: List[str] = []
@@ -227,7 +250,7 @@ def analyse_project(request: AnalyseRequest):
             rca_references = []
             rca_llm_used = False
 
-    # Step 8: Return unified response
+    # Step 9: Return unified response
     response_payload = AnalyseResponse(
         project_path=request.project_path,
         detected_services=services,

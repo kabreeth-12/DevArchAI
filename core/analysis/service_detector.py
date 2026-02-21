@@ -29,6 +29,17 @@ def detect_microservices(project_path: str) -> List[str]:
         "build.sbt",
         "Cargo.toml",
     }
+    infra_dirs = {
+        "docker",
+        "grafana",
+        "prometheus",
+        "monitoring",
+        "observability",
+        "k8s",
+        "kubernetes",
+        ".github",
+        ".gitlab",
+    }
 
     def has_descriptor(dir_path: Path) -> bool:
         return any((dir_path / name).exists() for name in descriptors)
@@ -37,7 +48,7 @@ def detect_microservices(project_path: str) -> List[str]:
 
     # First pass: immediate children
     for item in project_root.iterdir():
-        if item.is_dir() and has_descriptor(item):
+        if item.is_dir() and item.name not in infra_dirs and has_descriptor(item):
             services.add(item.name)
 
     # Second pass: one level deeper (e.g., /src/* or /services/*)
@@ -45,7 +56,7 @@ def detect_microservices(project_path: str) -> List[str]:
         if not item.is_dir():
             continue
         for sub in item.iterdir():
-            if sub.is_dir() and has_descriptor(sub):
+            if sub.is_dir() and sub.name not in infra_dirs and has_descriptor(sub):
                 services.add(sub.name)
 
     return sorted(services)

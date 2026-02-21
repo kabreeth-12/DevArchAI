@@ -45,3 +45,8 @@ Thumbs.db
 # Generated architecture graphs
 # ----------------------
 data/graphml/
+
+# ----------------------
+# Local tooling
+# ----------------------
+prometheus/
