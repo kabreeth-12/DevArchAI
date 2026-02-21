@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Literal
 from pathlib import Path
 
 from core.analysis.service_detector import detect_microservices
@@ -12,6 +12,10 @@ from core.ml.inference import DevArchAIInferenceEngine
 from core.ml.gnn_inference import DevArchAIGnnInferenceEngine
 from core.ml.llm_client import LlmClient
 from core.ml.rca_rag import RcaRagEngine
+from core.cicd.loader import load_payload
+from core.cicd.github_actions_adapter import parse_github_actions
+from core.cicd.gitlab_adapter import parse_gitlab
+from core.cicd.jenkins_adapter import parse_jenkins
 
 import math
 
@@ -49,6 +53,12 @@ class AnalyseRequest(BaseModel):
     project_path: str
     log_path: Optional[str] = None
     use_gnn: bool = False
+
+
+class CicdIngestRequest(BaseModel):
+    provider: Literal["github_actions", "jenkins", "gitlab"]
+    source_path: Optional[str] = None
+    raw_json: Optional[str] = None
 
 
 class RiskResult(BaseModel):
@@ -105,6 +115,29 @@ def health_check():
         "status": "DevArchAI backend running",
         "message": "Unified ML-powered backend is live"
     }
+
+
+# --------------------------------------------------
+# CI/CD Ingestion Endpoint
+# --------------------------------------------------
+
+@app.post("/cicd/ingest")
+def ingest_cicd(request: CicdIngestRequest):
+    payload = load_payload(
+        source_path=request.source_path,
+        raw_json=request.raw_json
+    )
+
+    if request.provider == "github_actions":
+        result = parse_github_actions(payload)
+    elif request.provider == "jenkins":
+        result = parse_jenkins(payload)
+    elif request.provider == "gitlab":
+        result = parse_gitlab(payload)
+    else:
+        return {"error": "Unsupported provider"}
+
+    return result.dict()
 
 
 # --------------------------------------------------
