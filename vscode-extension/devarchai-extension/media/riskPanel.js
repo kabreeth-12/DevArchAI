@@ -43,9 +43,14 @@
   if (data.rca_summary) {
     const rcaConfidence = Math.round((data.rca_confidence || 0) * 100);
     const refs = (data.rca_references || []).slice(0, 5);
-    const refsHtml = refs.length ? `<ul>${refs.map(r => `<li>${r}</li>`).join('')}</ul>` : '<p>No references available.</p>';
+    const refsHtml = refs.length ? `<ul>${refs.map(r => {
+      const base = r.split(/[\\/]/).pop();
+      return `<li title="${r}">${base}</li>`;
+    }).join('')}</ul>` : '<p>No references available.</p>';
+    const summaryHtml = String(data.rca_summary).replace(/\n/g, '<br>');
     rcaPanel.innerHTML = `
-      <p><b>Summary:</b> ${data.rca_summary}</p>
+      <p><b>Summary:</b></p>
+      <div class="rca-text">${summaryHtml}</div>
       <div class="meta">
         <span class="metric">Confidence: ${rcaConfidence}%</span>
         <span class="metric">LLM Used: ${data.rca_llm_used ? 'Yes' : 'No'}</span>
@@ -54,6 +59,40 @@
     `;
   } else {
     rcaPanel.innerHTML = '<p>No RCA data available.</p>';
+  }
+
+  const telemetryPanel = document.getElementById('telemetry-panel');
+  const telemetry = data.telemetry_debug || {};
+  const telemetryKeys = Object.keys(telemetry);
+
+  if (!telemetryKeys.length) {
+    telemetryPanel.innerHTML = '<p>No telemetry data available.</p>';
+  } else {
+    const rows = telemetryKeys.map(service => {
+      const t = telemetry[service] || {};
+      const reqRate = t.req_rate !== undefined ? t.req_rate.toFixed(3) : 'n/a';
+      const avgRt = t.avg_rt !== undefined ? t.avg_rt.toFixed(2) : 'n/a';
+      const p95 = t.perc95_rt !== undefined ? t.perc95_rt.toFixed(2) : 'n/a';
+      const spanCount = t.span_count !== undefined ? t.span_count : 'n/a';
+      const traceErr = t.trace_error_rate !== undefined ? t.trace_error_rate.toFixed(3) : 'n/a';
+      const p95Trace = t.p95_trace_ms !== undefined ? t.p95_trace_ms.toFixed(2) : 'n/a';
+
+      return `
+        <div class="card" style="margin-bottom:10px;">
+          <div style="font-weight:600;">${service}</div>
+          <div class="meta" style="margin-top:6px;">
+            <span class="metric">req_rate: ${reqRate}</span>
+            <span class="metric">avg_rt: ${avgRt}ms</span>
+            <span class="metric">p95_rt: ${p95}ms</span>
+            <span class="metric">span_count: ${spanCount}</span>
+            <span class="metric">trace_err: ${traceErr}</span>
+            <span class="metric">p95_trace: ${p95Trace}ms</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    telemetryPanel.innerHTML = rows;
   }
 
   const top = risks && risks.length ? risks[0] : null;

@@ -21,8 +21,31 @@ export function activate(context: vscode.ExtensionContext) {
 
       const logPath = await vscode.window.showInputBox({
         prompt: 'Optional log path for RCA (leave empty to skip)',
-        placeHolder: 'e.g. D:\\logs or ./logs'
+        placeHolder: 'e.g. D:\\logs or ./logs',
+        ignoreFocusOut: true
       });
+
+      const prometheusUrl = await vscode.window.showInputBox({
+        prompt: 'Optional Prometheus URL (leave empty to skip)',
+        placeHolder: 'e.g. http://localhost:9091',
+        ignoreFocusOut: true
+      });
+
+      const otelEndpoint = await vscode.window.showInputBox({
+        prompt: 'Optional trace metrics URL (leave empty to skip)',
+        placeHolder: 'e.g. http://localhost:8088/trace_metrics.json',
+        ignoreFocusOut: true
+      });
+
+      const debugTelemetry = await vscode.window.showQuickPick(
+        [
+          { label: 'Yes (show telemetry in UI)', value: true },
+          { label: 'No', value: false }
+        ],
+        {
+          placeHolder: 'Show telemetry metrics/traces in the UI?'
+        }
+      );
 
       try {
         const response = await fetch('http://localhost:8000/analyse', {
@@ -31,7 +54,10 @@ export function activate(context: vscode.ExtensionContext) {
           body: JSON.stringify({
             project_path: projectPath,
             log_path: logPath || null,
-            use_gnn: true
+            use_gnn: true,
+            prometheus_url: prometheusUrl || null,
+            otel_endpoint: otelEndpoint || null,
+            debug_telemetry: debugTelemetry?.value ?? false
           })
         });
 

@@ -55,3 +55,8 @@ prometheus/
 # Local telemetry test artifacts
 # ----------------------
 trace_metrics.json
+
+# ----------------------
+# Local runtime logs
+# ----------------------
+petclinic_logs/
