@@ -50,3 +50,8 @@ data/graphml/
 # Local tooling
 # ----------------------
 prometheus/
+
+# ----------------------
+# Local telemetry test artifacts
+# ----------------------
+trace_metrics.json

@@ -56,6 +56,7 @@ class AnalyseRequest(BaseModel):
     use_gnn: bool = False
     prometheus_url: Optional[str] = None
     otel_endpoint: Optional[str] = None
+    debug_telemetry: bool = False
 
 
 class CicdIngestRequest(BaseModel):
@@ -94,6 +95,7 @@ class AnalyseResponse(BaseModel):
     risk_analysis: List[RiskResult]
     improvements: List[str]
     dependency_graph: DependencyGraph
+    telemetry_debug: Optional[dict] = None
 
 
 def _sanitize_value(value):
@@ -176,19 +178,34 @@ def analyse_project(request: AnalyseRequest):
 
     if request.prometheus_url:
         try:
-            telemetry_features.update(
-                fetch_prometheus_metrics(request.prometheus_url)
-            )
+            prom = fetch_prometheus_metrics(request.prometheus_url)
+            for svc, feats in prom.items():
+                telemetry_features.setdefault(svc, {}).update(feats)
         except Exception:
             pass
 
     if request.otel_endpoint:
         try:
-            telemetry_features.update(
-                fetch_traces_otel(request.otel_endpoint)
-            )
+            traces = fetch_traces_otel(request.otel_endpoint)
+            for svc, feats in traces.items():
+                telemetry_features.setdefault(svc, {}).update(feats)
         except Exception:
             pass
+
+    # Normalize telemetry keys to match detected services
+    if telemetry_features:
+        normalized = {}
+        service_set = set(services)
+        for key, value in telemetry_features.items():
+            if key in service_set:
+                normalized[key] = value
+                continue
+            prefixed = f"spring-petclinic-{key}"
+            if prefixed in service_set:
+                normalized[prefixed] = value
+                continue
+            normalized[key] = value
+        telemetry_features = normalized
 
     # Step 4: Extract ML features from dependency graph + telemetry
     service_features = extract_service_features(
@@ -268,7 +285,10 @@ def analyse_project(request: AnalyseRequest):
         rca_llm_used=rca_llm_used,
         risk_analysis=risk_analysis,
         improvements=improvements,
-        dependency_graph=dependency_graph
+        dependency_graph=dependency_graph,
+        telemetry_debug=(
+            telemetry_features if request.debug_telemetry else None
+        )
     )
 
     # Guard against NaN/Inf in JSON serialization

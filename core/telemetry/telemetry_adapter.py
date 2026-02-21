@@ -18,15 +18,16 @@ def fetch_prometheus_metrics(prom_url: str) -> Dict[str, Dict[str, float]]:
     """
     base = prom_url.rstrip("/")
 
+    # Petclinic Micrometer metrics use http_server_requests_seconds_* and label "job"
     queries = {
         # Request rate (req/s)
-        "req_rate": "sum(rate(http_requests_total[5m])) by (service)",
-        # Error rate (5xx/4xx)
-        "req_ko": "sum(rate(http_requests_total{status=~\"5..|4..\"}[5m])) by (service)",
+        "req_rate": "sum(rate(http_server_requests_seconds_count[5m])) by (job)",
+        # Error rate (4xx/5xx)
+        "req_ko": "sum(rate(http_server_requests_seconds_count{status=~\"4..|5..\"}[5m])) by (job)",
         # Avg response time (ms)
-        "avg_rt": "avg(rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])) by (service) * 1000",
+        "avg_rt": "avg(rate(http_server_requests_seconds_sum[5m]) / rate(http_server_requests_seconds_count[5m])) by (job) * 1000",
         # 95th percentile latency (ms)
-        "perc95_rt": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) * 1000",
+        "perc95_rt": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, job)) * 1000",
     }
 
     results: Dict[str, Dict[str, float]] = {}
@@ -100,8 +101,8 @@ def _prom_query(base_url: str, prom_query: str) -> Dict[str, float]:
 
 
 def _extract_service_label(metric: Dict[str, str]) -> Optional[str]:
-    # Try common label names
-    for key in ("service", "service_name", "app", "job", "k8s_app"):
+    # Try common label names (Petclinic uses "job")
+    for key in ("job", "service", "service_name", "app", "k8s_app", "application"):
         if key in metric:
             return metric[key]
     return None
