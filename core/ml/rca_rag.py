@@ -13,6 +13,19 @@ from core.ml.llm_client import LlmClient, LlmResponse
 
 
 _LINE_SPLIT = re.compile(r"\r?\n")
+_NOISE_PATTERNS = [
+    re.compile(r"springframework\.boot\.logging", re.IGNORECASE),
+    re.compile(r"logback", re.IGNORECASE),
+    re.compile(r"configurationwatchlist", re.IGNORECASE),
+    re.compile(r"tomcat.*starting", re.IGNORECASE),
+    re.compile(r"started .* in .* seconds", re.IGNORECASE),
+]
+
+_SIGNAL_KEYWORDS = [
+    "error", "exception", "failed", "failure", "timeout", "timed out",
+    "refused", "unavailable", "unhealthy", "stacktrace", "caused by",
+    "connection", "rejected", "500", "503", "504", "4xx", "5xx"
+]
 
 
 @dataclass
@@ -66,7 +79,24 @@ class RcaRagEngine:
             ngram_range=(1, 2),
             stop_words="english",
         )
-        matrix = vectorizer.fit_transform(docs)
+        try:
+            matrix = vectorizer.fit_transform(docs)
+        except ValueError:
+            # Fallback if stop words wipe out vocabulary in logs
+            vectorizer = TfidfVectorizer(
+                max_features=15000,
+                ngram_range=(1, 2),
+                stop_words=None,
+            )
+            try:
+                matrix = vectorizer.fit_transform(docs)
+            except ValueError:
+                # Final fallback: keep docs for extractive summary without TF-IDF
+                self._vectorizer = None
+                self._docs = docs
+                self._doc_refs = refs
+                self._matrix = None
+                return
 
         self._vectorizer = vectorizer
         self._docs = docs
@@ -75,7 +105,10 @@ class RcaRagEngine:
 
     def query(self, question: str, top_k: int = 5) -> Tuple[List[str], List[str]]:
         if not self._vectorizer or self._matrix is None:
-            raise RuntimeError("RAG index not built. Call build_index() first.")
+            # Fallback: return first chunks if vectorizer unavailable
+            snippets = self._docs[:top_k]
+            refs = self._doc_refs[:top_k]
+            return snippets, refs
 
         query_vec = self._vectorizer.transform([question])
         scores = (self._matrix @ query_vec.T).toarray().ravel()
@@ -106,7 +139,7 @@ class RcaRagEngine:
                 )
 
         # Fallback: extractive summary from top snippets
-        summary = _extractive_summary(snippets)
+        summary = _extractive_summary(snippets, refs)
         return RcaResult(
             summary=summary,
             confidence=0.35,
@@ -125,17 +158,69 @@ def _chunk_text(text: str, max_lines: int = 40) -> List[str]:
     return chunks
 
 
-def _extractive_summary(snippets: List[str]) -> str:
+def _extractive_summary(snippets: List[str], refs: List[str]) -> str:
     if not snippets:
         return "No RCA evidence found in logs."
 
-    # Heuristic: take the first 2 lines from the top 2 snippets
-    selected = []
-    for snippet in snippets[:2]:
+    # Prefer high-signal lines and avoid startup noise
+    scored_lines: List[tuple[int, str, str]] = []
+    keyword_counts = {k: 0 for k in ["error", "exception", "timeout", "failed", "refused"]}
+    service_hits = {}
+
+    for snippet, ref in zip(snippets, refs or []):
+        service = Path(ref).stem if ref else "unknown"
+        service_hits[service] = service_hits.get(service, 0) + 1
         lines = [line.strip() for line in _LINE_SPLIT.split(snippet) if line.strip()]
-        selected.extend(lines[:2])
+        for line in lines:
+            lower = line.lower()
+            if any(p.search(line) for p in _NOISE_PATTERNS):
+                continue
+            score = 0
+            for kw in _SIGNAL_KEYWORDS:
+                if kw in lower:
+                    score += 1
+            for kw in keyword_counts:
+                if kw in lower:
+                    keyword_counts[kw] += 1
+            if "error" in lower or "exception" in lower:
+                score += 2
+            scored_lines.append((score, line, service))
+
+    # Sort by score and keep top lines; fallback to any non-noise lines
+    scored_lines.sort(key=lambda x: x[0], reverse=True)
+    selected = [(line, service) for score, line, service in scored_lines if score > 0][:4]
+
+    if not selected:
+        fallback = []
+        for snippet, ref in zip(snippets, refs or []):
+            service = Path(ref).stem if ref else "unknown"
+            lines = [line.strip() for line in _LINE_SPLIT.split(snippet) if line.strip()]
+            for line in lines:
+                if any(p.search(line) for p in _NOISE_PATTERNS):
+                    continue
+                fallback.append((line, service))
+        selected = fallback[:4]
 
     if not selected:
         return "No RCA evidence found in logs."
 
-    return " | ".join(selected[:4])
+    # Make it developer-friendly and concise
+    bullets = []
+    for line, service in selected[:4]:
+        cleaned = re.sub(r"\s+", " ", line).strip()
+        if len(cleaned) > 200:
+            cleaned = cleaned[:200] + "..."
+        bullets.append(f"- [{service}] {cleaned}")
+
+    top_service = max(service_hits, key=service_hits.get) if service_hits else "unknown"
+    top_keywords = ", ".join([f"{k}={v}" for k, v in keyword_counts.items() if v > 0]) or "none"
+    likely_cause = re.sub(r"\s+", " ", selected[0][0]).strip()
+    if len(likely_cause) > 180:
+        likely_cause = likely_cause[:180] + "..."
+
+    return (
+        f"Primary log source: {top_service}\n"
+        f"Top error signals: {top_keywords}\n"
+        f"Likely Cause: {likely_cause}\n"
+        f"Details:\n" + "\n".join(bullets)
+    )
