@@ -17,6 +17,7 @@ from core.cicd.loader import load_payload
 from core.cicd.github_actions_adapter import parse_github_actions
 from core.cicd.gitlab_adapter import parse_gitlab
 from core.cicd.jenkins_adapter import parse_jenkins
+from core.cicd.optimizer import optimize_pipeline
 
 import math
 
@@ -60,6 +61,12 @@ class AnalyseRequest(BaseModel):
 
 
 class CicdIngestRequest(BaseModel):
+    provider: Literal["github_actions", "jenkins", "gitlab"]
+    source_path: Optional[str] = None
+    raw_json: Optional[str] = None
+
+
+class CicdOptimizeRequest(BaseModel):
     provider: Literal["github_actions", "jenkins", "gitlab"]
     source_path: Optional[str] = None
     raw_json: Optional[str] = None
@@ -143,6 +150,34 @@ def ingest_cicd(request: CicdIngestRequest):
         return {"error": "Unsupported provider"}
 
     return result.dict()
+
+
+# --------------------------------------------------
+# CI/CD Optimization Endpoint
+# --------------------------------------------------
+
+@app.post("/cicd/optimize")
+def optimize_cicd(request: CicdOptimizeRequest):
+    payload = load_payload(
+        source_path=request.source_path,
+        raw_json=request.raw_json
+    )
+
+    if request.provider == "github_actions":
+        run = parse_github_actions(payload)
+    elif request.provider == "jenkins":
+        run = parse_jenkins(payload)
+    elif request.provider == "gitlab":
+        run = parse_gitlab(payload)
+    else:
+        return {"error": "Unsupported provider"}
+
+    suggestions = optimize_pipeline(run)
+    return {
+        "provider": run.provider,
+        "pipeline_id": run.pipeline_id,
+        "suggestions": [s.__dict__ for s in suggestions]
+    }
 
 
 # --------------------------------------------------
