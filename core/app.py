@@ -225,13 +225,18 @@ def analyse_project(request: AnalyseRequest):
             service_features=service_features
         )
 
-    # Step 6: Generate improvement suggestions
+    # Step 6: Normalize model label to unified DevArchAI system
+    for item in risk_analysis:
+        if isinstance(item, dict):
+            item["model"] = "DevArchAI Unified Model"
+
+    # Step 7: Generate improvement suggestions
     improvements = generate_improvements(
         services=services,
         dependency_count=len(graph.get_edges())
     )
 
-    # Step 7: Serialize dependency graph for frontend
+    # Step 8: Serialize dependency graph for frontend
     dependency_graph = DependencyGraph(
         nodes=graph.get_nodes(),
         edges=[
@@ -243,7 +248,7 @@ def analyse_project(request: AnalyseRequest):
         ]
     )
 
-    # Step 8: RCA via RAG + LLM (optional)
+    # Step 9: RCA via RAG + LLM (optional)
     rca_summary = "RCA not available (no log path provided)."
     rca_confidence = 0.0
     rca_references: List[str] = []
@@ -267,7 +272,7 @@ def analyse_project(request: AnalyseRequest):
             rca_references = []
             rca_llm_used = False
 
-    # Step 9: Return unified response
+    # Step 10: Return unified response
     response_payload = AnalyseResponse(
         project_path=request.project_path,
         detected_services=services,
@@ -275,9 +280,9 @@ def analyse_project(request: AnalyseRequest):
             risk_analysis[0]["service"] if risk_analysis else "unknown"
         ),
         explanation=(
-            "Architectural risk predicted using a unified DevArchAI "
-            "machine learning model combining dependency structure, "
-            "anomaly signals, and fault impact data."
+            "Architectural risk predicted using the DevArchAI Unified Model "
+            "that combines dependency structure, telemetry signals, and "
+            "fault impact indicators within a single reasoning pipeline."
         ),
         rca_summary=rca_summary,
         rca_confidence=rca_confidence,

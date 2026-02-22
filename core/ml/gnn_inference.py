@@ -70,8 +70,7 @@ class DevArchAIGnnInferenceEngine:
                 "reason": generate_reason(
                     features=service_features[service],
                     risk_level=risk_level
-                ),
-                "model": "gnn"
+                )
             })
 
         results.sort(
