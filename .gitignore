@@ -60,3 +60,8 @@ trace_metrics.json
 # Local runtime logs
 # ----------------------
 petclinic_logs/
+
+# ----------------------
+# Local CI/CD samples
+# ----------------------
+real_gh_run.json

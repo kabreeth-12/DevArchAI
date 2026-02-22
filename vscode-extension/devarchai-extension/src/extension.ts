@@ -65,7 +65,35 @@ export function activate(context: vscode.ExtensionContext) {
           throw new Error(`Backend error: ${response.statusText}`);
         }
 
-        const analysisResult = await response.json();
+        const analysisResult = await response.json() as any;
+
+        let cicdOptimization: any = null;
+        try {
+          const cicdPath = await vscode.window.showInputBox({
+            prompt: 'Optional CI/CD JSON path for optimization (leave empty to skip)',
+            placeHolder: 'e.g. D:\\cicd\\run.json',
+            ignoreFocusOut: true
+          });
+          if (cicdPath) {
+            const cicdResp = await fetch('http://localhost:8000/cicd/optimize', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                provider: 'github_actions',
+                source_path: cicdPath
+              })
+            });
+            if (cicdResp.ok) {
+              cicdOptimization = await cicdResp.json();
+            }
+          }
+        } catch {
+          cicdOptimization = null;
+        }
+
+        if (cicdOptimization) {
+          analysisResult.cicd_optimization = cicdOptimization;
+        }
 
         showRiskPanel(context, analysisResult);
 

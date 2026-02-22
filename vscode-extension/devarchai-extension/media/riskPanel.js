@@ -95,6 +95,24 @@
     telemetryPanel.innerHTML = rows;
   }
 
+  const cicdPanel = document.getElementById('cicd-optimization');
+  const cicd = data.cicd_optimization;
+  if (!cicd || !Array.isArray(cicd.suggestions) || !cicd.suggestions.length) {
+    cicdPanel.innerHTML = '<p>No CI/CD optimization suggestions available.</p>';
+  } else {
+    const cards = cicd.suggestions.map(s => `
+      <div class="card" style="margin-bottom:10px;">
+        <div style="font-weight:600;">${s.title}</div>
+        <div class="meta" style="margin-top:6px;">
+          <span class="metric">Impact: ${s.impact}</span>
+        </div>
+        <p style="margin:6px 0 4px 0;color:var(--muted);font-size:12px;">${s.rationale}</p>
+        <p style="margin:0;color:#cbd5f5;font-size:12px;"><b>Action:</b> ${s.action}</p>
+      </div>
+    `).join('');
+    cicdPanel.innerHTML = cards;
+  }
+
   const top = risks && risks.length ? risks[0] : null;
   document.getElementById('hero-service').textContent = top ? top.service : '—';
   document.getElementById('hero-risk').textContent = top ? `Risk: ${top.predicted_risk_level}` : 'Risk: —';
