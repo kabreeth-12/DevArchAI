@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 from typing import Dict
@@ -22,15 +23,35 @@ def evaluate_model(model_path: Path, X_test: pd.DataFrame, y_test: pd.Series) ->
     y_pred = model.predict(X_test)
     return {
         "accuracy": float(accuracy_score(y_test, y_pred)),
-        "classification_report": classification_report(y_test, y_pred, output_dict=True),
+        "classification_report": classification_report(
+            y_test, y_pred, output_dict=True, zero_division=0
+        ),
         "confusion_matrix": confusion_matrix(y_test, y_pred).tolist(),
     }
 
 
 def main() -> None:
-    dataset_path = Path("data/csv/structural_training_dataset.csv")
-    unified_path = Path("data/models/devarchai_unified_model.pkl")
-    baseline_path = Path("data/models/devarchai_structural_baseline.pkl")
+    parser = argparse.ArgumentParser(description="Evaluate DevArchAI models")
+    parser.add_argument(
+        "--dataset",
+        default="data/csv/structural_training_dataset.csv",
+        help="Path to dataset CSV",
+    )
+    parser.add_argument(
+        "--unified",
+        default="data/models/devarchai_unified_model.pkl",
+        help="Path to unified model",
+    )
+    parser.add_argument(
+        "--baseline",
+        default="data/models/devarchai_structural_baseline.pkl",
+        help="Path to baseline model",
+    )
+    args = parser.parse_args()
+
+    dataset_path = Path(args.dataset)
+    unified_path = Path(args.unified)
+    baseline_path = Path(args.baseline)
 
     df = pd.read_csv(dataset_path)
 
@@ -83,10 +104,11 @@ def main() -> None:
         X, y, test_size=0.25, random_state=42, stratify=y
     )
 
+    label_counts = df["risk_label"].value_counts().to_dict()
     results = {
         "dataset": str(dataset_path),
         "rows": int(len(df)),
-        "labels": df["risk_label"].value_counts().to_dict(),
+        "labels": label_counts,
         "unified_model": str(unified_path),
         "baseline_model": str(baseline_path),
         "unified": evaluate_model(unified_path, X_test, y_test),
@@ -107,6 +129,10 @@ def main() -> None:
     lines.append(f"Dataset: `{dataset_path}`")
     lines.append(f"Rows: {results['rows']}")
     lines.append(f"Label counts: {results['labels']}")
+    if label_counts:
+        total = sum(label_counts.values())
+        imbalance = {k: round(v / total, 4) for k, v in label_counts.items()}
+        lines.append(f"Label share: {imbalance}")
     lines.append("")
     lines.append("## Unified Model")
     lines.append(f"Accuracy: {results['unified']['accuracy']:.4f}")

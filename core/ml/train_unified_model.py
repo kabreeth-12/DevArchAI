@@ -1,6 +1,8 @@
-import pandas as pd
+import argparse
 from pathlib import Path
+
 import joblib
+import pandas as pd
 
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
@@ -9,10 +11,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
 
 
-def train_unified_devarchai_model(
-    dataset_path: Path,
-    model_output_path: Path
-):
+def train_unified_devarchai_model(dataset_path: Path, model_output_path: Path):
     """
     Train the unified DevArchAI model using:
     - Structural dependency features
@@ -150,7 +149,20 @@ def train_unified_devarchai_model(
 # --------------------------------------------------
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train unified DevArchAI model")
+    parser.add_argument(
+        "--dataset",
+        default="data/csv/structural_training_dataset.csv",
+        help="Path to training dataset CSV",
+    )
+    parser.add_argument(
+        "--out",
+        default="data/models/devarchai_unified_model.pkl",
+        help="Path to output model file",
+    )
+    args = parser.parse_args()
+
     train_unified_devarchai_model(
-        dataset_path=Path("data/csv/structural_training_dataset.csv"),
-        model_output_path=Path("data/models/devarchai_unified_model.pkl")
+        dataset_path=Path(args.dataset),
+        model_output_path=Path(args.out),
     )

@@ -1,9 +1,11 @@
-import pandas as pd
+import argparse
 from pathlib import Path
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, accuracy_score
+
 import joblib
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import train_test_split
 
 
 def train_structural_baseline(
@@ -86,9 +88,22 @@ def train_structural_baseline(
 # Script entry point (IMPORTANT)
 # -------------------------------
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train structural baseline model")
+    parser.add_argument(
+        "--dataset",
+        default="data/csv/structural_training_dataset.csv",
+        help="Path to training dataset CSV",
+    )
+    parser.add_argument(
+        "--out",
+        default="data/models/devarchai_structural_baseline.pkl",
+        help="Path to output model file",
+    )
+    args = parser.parse_args()
+
     print("[DevArchAI] Training script started")
 
     train_structural_baseline(
-        dataset_path=Path("data/csv/structural_training_dataset.csv"),
-        model_output_path=Path("data/models/devarchai_structural_baseline.pkl")
+        dataset_path=Path(args.dataset),
+        model_output_path=Path(args.out),
     )
