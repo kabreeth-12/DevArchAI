@@ -323,6 +323,42 @@ def load_bgl_logdatasets(base: Path) -> pd.DataFrame:
     df = pd.DataFrame(rows)
     return _finalize(df, "BGL_logdatasets")
 
+
+def load_openstack_logdatasets(base: Path) -> pd.DataFrame:
+    root = base / "data" / "datasets" / "lo2" / "log-datasets" / "openstack_loghub"
+    if not root.exists():
+        return pd.DataFrame()
+
+    rows: List[Dict[str, float]] = []
+    normal_file = root / "openstack_test_normal"
+    abnormal_file = root / "openstack_test_abnormal"
+
+    for file_path, label in [(normal_file, 0), (abnormal_file, 1)]:
+        if not file_path.exists():
+            continue
+        lines: List[str] = []
+        with file_path.open("r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    lines.append(line)
+        if len(lines) > MAX_LOG_ROWS:
+            lines = list(pd.Series(lines).sample(MAX_LOG_ROWS, random_state=42))
+        for _ in lines:
+            rows.append(
+                {
+                    "risk_label": label,
+                    "anomaly_rate": float(label),
+                    "error_rate": float(label),
+                    "req_rate": 0.0,
+                    "avg_rt": 0.0,
+                }
+            )
+
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    return _finalize(df, "OpenStack_logdatasets")
 def main() -> None:
     parser = argparse.ArgumentParser(description="Merge datasets into unified training schema")
     parser.add_argument("--out", default="data/csv/unified_training_dataset.csv")
@@ -336,6 +372,7 @@ def main() -> None:
         load_hdfs_parquet(base),
         load_hdfs_logdatasets(base),
         load_bgl_logdatasets(base),
+        load_openstack_logdatasets(base),
     ]
 
     combined = pd.concat([f for f in frames if not f.empty], ignore_index=True)
