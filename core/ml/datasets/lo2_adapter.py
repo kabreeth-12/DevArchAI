@@ -37,3 +37,21 @@ def load_lo2_anomaly_signals(
 
             is_anomaly = row.get(anomaly_field, "0")
             is_anomaly = 1 if str(is_anomaly).lower() in ["1", "true", "yes"] else 0
+
+            if service not in service_stats:
+                service_stats[service] = {"anomaly_count": 0, "total_requests": 0}
+
+            service_stats[service]["total_requests"] += 1
+            service_stats[service]["anomaly_count"] += is_anomaly
+
+    output: Dict[str, Dict[str, float]] = {}
+    for service, stats in service_stats.items():
+        total = stats["total_requests"]
+        anomaly = stats["anomaly_count"]
+        output[service] = {
+            "anomaly_rate": (anomaly / total) if total else 0.0,
+            "anomaly_count": float(anomaly),
+            "total_requests": float(total),
+        }
+
+    return output

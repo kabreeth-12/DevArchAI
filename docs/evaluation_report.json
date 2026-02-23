@@ -1,0 +1,117 @@
+{
+  "dataset": "data\\csv\\structural_training_dataset.csv",
+  "rows": 209,
+  "labels": {
+    "0": 153,
+    "1": 42,
+    "2": 14
+  },
+  "unified_model": "data\\models\\devarchai_unified_model.pkl",
+  "baseline_model": "data\\models\\devarchai_structural_baseline.pkl",
+  "unified": {
+    "accuracy": 0.9811320754716981,
+    "classification_report": {
+      "0": {
+        "precision": 0.975,
+        "recall": 1.0,
+        "f1-score": 0.9873417721518988,
+        "support": 39.0
+      },
+      "1": {
+        "precision": 1.0,
+        "recall": 0.9090909090909091,
+        "f1-score": 0.9523809523809523,
+        "support": 11.0
+      },
+      "2": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 3.0
+      },
+      "accuracy": 0.9811320754716981,
+      "macro avg": {
+        "precision": 0.9916666666666667,
+        "recall": 0.9696969696969697,
+        "f1-score": 0.9799075748442837,
+        "support": 53.0
+      },
+      "weighted avg": {
+        "precision": 0.9816037735849056,
+        "recall": 0.9811320754716981,
+        "f1-score": 0.9808022564172553,
+        "support": 53.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        39,
+        0,
+        0
+      ],
+      [
+        1,
+        10,
+        0
+      ],
+      [
+        0,
+        0,
+        3
+      ]
+    ]
+  },
+  "baseline": {
+    "accuracy": 0.9245283018867925,
+    "classification_report": {
+      "0": {
+        "precision": 0.926829268292683,
+        "recall": 0.9743589743589743,
+        "f1-score": 0.95,
+        "support": 39.0
+      },
+      "1": {
+        "precision": 0.9090909090909091,
+        "recall": 0.9090909090909091,
+        "f1-score": 0.9090909090909091,
+        "support": 11.0
+      },
+      "2": {
+        "precision": 1.0,
+        "recall": 0.3333333333333333,
+        "f1-score": 0.5,
+        "support": 3.0
+      },
+      "accuracy": 0.9245283018867925,
+      "macro avg": {
+        "precision": 0.9453067257945307,
+        "recall": 0.7389277389277389,
+        "f1-score": 0.7863636363636363,
+        "support": 53.0
+      },
+      "weighted avg": {
+        "precision": 0.927289461573861,
+        "recall": 0.9245283018867925,
+        "f1-score": 0.9160377358490566,
+        "support": 53.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        38,
+        1,
+        0
+      ],
+      [
+        1,
+        10,
+        0
+      ],
+      [
+        2,
+        0,
+        1
+      ]
+    ]
+  }
+}
