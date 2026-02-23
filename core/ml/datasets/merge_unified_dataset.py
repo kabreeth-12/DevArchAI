@@ -4,9 +4,14 @@ import argparse
 from pathlib import Path
 from typing import Dict, List
 import json
+import warnings
 
 import numpy as np
 import pandas as pd
+try:
+    import pyarrow.parquet as pq
+except Exception:  # pragma: no cover - optional dependency
+    pq = None
 
 
 UNIFIED_FEATURES = [
@@ -35,6 +40,8 @@ UNIFIED_FEATURES = [
     "avg_affected_services",
     "fault_impact_score",
 ]
+
+MAX_HDFS_ROWS = 20000
 
 
 def _ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -207,6 +214,78 @@ def load_eadro(base: Path) -> pd.DataFrame:
     return _finalize(df, "Eadro")
 
 
+def load_hdfs_parquet(base: Path) -> pd.DataFrame:
+    root = base / "data" / "datasets" / "hdfs_v1" / "data"
+    if not root.exists():
+        return pd.DataFrame()
+    if pq is None:
+        warnings.warn("pyarrow not installed; skipping HDFS_v1 parquet")
+        return pd.DataFrame()
+
+    rows: List[Dict[str, float]] = []
+    for file in sorted(root.glob("*.parquet")):
+        table = pq.read_table(file, columns=["anomaly"])
+        df = table.to_pandas()
+        if "anomaly" not in df.columns:
+            warnings.warn(f"Missing anomaly column in {file}")
+            continue
+        series = df["anomaly"].fillna(0).astype(int)
+        if len(series) > MAX_HDFS_ROWS:
+            series = series.sample(MAX_HDFS_ROWS, random_state=42)
+        for val in series.tolist():
+            rows.append(
+                {
+                    "risk_label": int(val),
+                    "anomaly_rate": float(val),
+                    "error_rate": float(val),
+                    "req_rate": 0.0,
+                    "avg_rt": 0.0,
+                }
+            )
+
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    return _finalize(df, "HDFS_v1")
+
+
+def load_hdfs_logdatasets(base: Path) -> pd.DataFrame:
+    root = base / "data" / "datasets" / "lo2" / "log-datasets" / "hdfs_logdeep"
+    if not root.exists():
+        return pd.DataFrame()
+
+    rows: List[Dict[str, float]] = []
+    normal_file = root / "hdfs_test_normal"
+    abnormal_file = root / "hdfs_test_abnormal"
+
+    for file_path, label in [(normal_file, 0), (abnormal_file, 1)]:
+        if not file_path.exists():
+            continue
+        lines: List[str] = []
+        with file_path.open("r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    lines.append(line)
+        if len(lines) > MAX_HDFS_ROWS:
+            lines = list(pd.Series(lines).sample(MAX_HDFS_ROWS, random_state=42))
+        for _ in lines:
+            rows.append(
+                {
+                    "risk_label": label,
+                    "anomaly_rate": float(label),
+                    "error_rate": float(label),
+                    "req_rate": 0.0,
+                    "avg_rt": 0.0,
+                }
+            )
+
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    return _finalize(df, "HDFS_logdatasets")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Merge datasets into unified training schema")
     parser.add_argument("--out", default="data/csv/unified_training_dataset.csv")
@@ -217,6 +296,8 @@ def main() -> None:
         load_lo2_features(base),
         load_rs_anomic(base),
         load_eadro(base),
+        load_hdfs_parquet(base),
+        load_hdfs_logdatasets(base),
     ]
 
     combined = pd.concat([f for f in frames if not f.empty], ignore_index=True)
