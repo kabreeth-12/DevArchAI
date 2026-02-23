@@ -9,8 +9,6 @@ architectures using dependency reasoning, real telemetry (metrics + traces), and
 log-based RCA. It integrates directly into the IDE and provides explainable, unified
 DevArchAI model outputs for risk analysis and CI/CD optimization.
 
-This repository contains the working implementation for the Final Year Project (IPD).
-
 ## Unified DevArchAI Model (Single System View)
 
 The system is presented as a single DevArchAI Unified Model that combines:
@@ -20,7 +18,7 @@ The system is presented as a single DevArchAI Unified Model that combines:
 - CI/CD analysis inputs (ingestion and optimization signals)
 
 Internally, specialized components support the unified pipeline, but all outputs are
-exposed as a single DevArchAI model response for consistency with the proposal.
+exposed as a single DevArchAI model response for a consistent system view.
 
 ## Key Capabilities
 - Dependency-aware risk analysis for microservices
