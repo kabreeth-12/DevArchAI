@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 from typing import Dict, List
+import json
 
 import numpy as np
 import pandas as pd
@@ -125,6 +126,87 @@ def load_rs_anomic(base: Path) -> pd.DataFrame:
     return _finalize(df, "RS-Anomic")
 
 
+def _log_error_rate(lines: List[str]) -> float:
+    if not lines:
+        return 0.0
+    errors = 0
+    for line in lines:
+        l = line.lower()
+        if "error" in l or "exception" in l or "<error>" in l:
+            errors += 1
+    return errors / len(lines)
+
+
+def _load_eadro_run(run_dir: Path, fault_file: Path, source: str) -> List[Dict[str, float]]:
+    rows: List[Dict[str, float]] = []
+    if not run_dir.exists() or not fault_file.exists():
+        return rows
+
+    faults = pd.read_json(fault_file).get("faults", [])
+    faulted_services = {f.get("name") for f in faults if isinstance(f, dict)}
+
+    logs_path = run_dir / "logs.json"
+    metrics_dir = run_dir / "metrics"
+    if not logs_path.exists() or not metrics_dir.exists():
+        return rows
+
+    logs_data = json.load(open(logs_path, "r", encoding="utf-8"))
+    for service, lines in logs_data.items():
+        if not isinstance(lines, list):
+            continue
+        error_rate = _log_error_rate(lines)
+        req_rate = float(len(lines))
+
+        metrics_file = metrics_dir / f"{service}.csv"
+        avg_rt = 0.0
+        if metrics_file.exists():
+            mdf = pd.read_csv(metrics_file)
+            if "cpu_usage_total" in mdf.columns:
+                avg_rt = float(mdf["cpu_usage_total"].mean())
+
+        rows.append(
+            {
+                "risk_label": 1 if service in faulted_services else 0,
+                "anomaly_rate": error_rate,
+                "error_rate": error_rate,
+                "req_rate": req_rate,
+                "avg_rt": avg_rt,
+                "fault_injection_count": 1 if service in faulted_services else 0,
+                "fault_impact_score": 1.0 if service in faulted_services else 0.0,
+                "source_dataset": source,
+            }
+        )
+
+    return rows
+
+
+def load_eadro(base: Path) -> pd.DataFrame:
+    root = base / "data" / "datasets" / "eadro"
+    if not root.exists():
+        return pd.DataFrame()
+
+    rows: List[Dict[str, float]] = []
+    for dataset_name in ["SN", "TT"]:
+        data_root = root / dataset_name / f"{dataset_name} Dataset" / "data"
+        if not data_root.exists():
+            continue
+        for run_dir in data_root.iterdir():
+            if not run_dir.is_dir():
+                continue
+            run_id = run_dir.name
+            suffix = run_id
+            prefix = f"{dataset_name}."
+            if run_id.startswith(prefix):
+                suffix = run_id[len(prefix):]
+            fault_file = data_root / f"{dataset_name}.fault-{suffix}.json"
+            rows.extend(_load_eadro_run(run_dir, fault_file, f"Eadro_{dataset_name}"))
+
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    return _finalize(df, "Eadro")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Merge datasets into unified training schema")
     parser.add_argument("--out", default="data/csv/unified_training_dataset.csv")
@@ -134,6 +216,7 @@ def main() -> None:
     frames = [
         load_lo2_features(base),
         load_rs_anomic(base),
+        load_eadro(base),
     ]
 
     combined = pd.concat([f for f in frames if not f.empty], ignore_index=True)
