@@ -24,6 +24,11 @@ data/datasets/**/*
 !data/datasets/**/.gitkeep
 
 # ----------------------
+# Processed datasets / reports (generated)
+# ----------------------
+data/processed/
+
+# ----------------------
 # External projects
 # ----------------------
 external-projects/
