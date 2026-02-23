@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, List
 import json
 import warnings
+import tarfile
 
 import numpy as np
 import pandas as pd
@@ -359,6 +360,116 @@ def load_openstack_logdatasets(base: Path) -> pd.DataFrame:
         return pd.DataFrame()
     df = pd.DataFrame(rows)
     return _finalize(df, "OpenStack_logdatasets")
+
+
+def _load_sequence_file(path: Path, label: int, source: str) -> List[Dict[str, float]]:
+    rows: List[Dict[str, float]] = []
+    if not path.exists():
+        return rows
+    lines: List[str] = []
+    with path.open("r", encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                lines.append(line)
+    if len(lines) > MAX_LOG_ROWS:
+        lines = list(pd.Series(lines).sample(MAX_LOG_ROWS, random_state=42))
+    for _ in lines:
+        rows.append(
+            {
+                "risk_label": label,
+                "anomaly_rate": float(label),
+                "error_rate": float(label),
+                "req_rate": 0.0,
+                "avg_rt": 0.0,
+                "source_dataset": source,
+            }
+        )
+    return rows
+
+
+def load_hadoop_logdatasets(base: Path) -> pd.DataFrame:
+    root = base / "data" / "datasets" / "lo2" / "log-datasets" / "hadoop_loghub"
+    if not root.exists():
+        return pd.DataFrame()
+
+    rows: List[Dict[str, float]] = []
+    rows.extend(_load_sequence_file(root / "hadoop_test_normal", 0, "Hadoop_logdatasets"))
+    rows.extend(_load_sequence_file(root / "hadoop_test_abnormal", 1, "Hadoop_logdatasets"))
+    rows.extend(_load_sequence_file(root / "hadoop_test_abnormal_disk_full", 1, "Hadoop_logdatasets"))
+    rows.extend(_load_sequence_file(root / "hadoop_test_abnormal_machine_down", 1, "Hadoop_logdatasets"))
+    rows.extend(
+        _load_sequence_file(root / "hadoop_test_abnormal_network_disconnection", 1, "Hadoop_logdatasets")
+    )
+
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    return _finalize(df, "Hadoop_logdatasets")
+
+
+def load_openstack_paris_logdatasets(base: Path) -> pd.DataFrame:
+    root = base / "data" / "datasets" / "lo2" / "log-datasets" / "openstack_parisakalaki"
+    if not root.exists():
+        return pd.DataFrame()
+
+    rows: List[Dict[str, float]] = []
+    rows.extend(_load_sequence_file(root / "openstack_test_normal", 0, "OpenStackParis_logdatasets"))
+    rows.extend(_load_sequence_file(root / "openstack_test_abnormal", 1, "OpenStackParis_logdatasets"))
+
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    return _finalize(df, "OpenStackParis_logdatasets")
+
+
+def load_thunderbird_logdatasets(base: Path) -> pd.DataFrame:
+    root = base / "data" / "datasets" / "lo2" / "log-datasets" / "thunderbird_cfdr"
+    if not root.exists():
+        return pd.DataFrame()
+
+    rows: List[Dict[str, float]] = []
+    normal_archive = root / "thunderbird_test_normal.tar.gz"
+    abnormal_archive = root / "thunderbird_test_abnormal.tar.gz"
+
+    for archive, label in [(normal_archive, 0), (abnormal_archive, 1)]:
+        if not archive.exists():
+            continue
+        lines: List[str] = []
+        with tarfile.open(archive, "r:gz") as tf:
+            for member in tf.getmembers():
+                if not member.isfile():
+                    continue
+                f = tf.extractfile(member)
+                if f is None:
+                    continue
+                for raw in f:
+                    try:
+                        line = raw.decode("utf-8", errors="ignore").strip()
+                    except Exception:
+                        continue
+                    if line:
+                        lines.append(line)
+                if len(lines) >= MAX_LOG_ROWS:
+                    break
+        if len(lines) > MAX_LOG_ROWS:
+            lines = list(pd.Series(lines).sample(MAX_LOG_ROWS, random_state=42))
+        for _ in lines:
+            rows.append(
+                {
+                    "risk_label": label,
+                    "anomaly_rate": float(label),
+                    "error_rate": float(label),
+                    "req_rate": 0.0,
+                    "avg_rt": 0.0,
+                    "source_dataset": "Thunderbird_logdatasets",
+                }
+            )
+
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    return _finalize(df, "Thunderbird_logdatasets")
 def main() -> None:
     parser = argparse.ArgumentParser(description="Merge datasets into unified training schema")
     parser.add_argument("--out", default="data/csv/unified_training_dataset.csv")
@@ -373,6 +484,9 @@ def main() -> None:
         load_hdfs_logdatasets(base),
         load_bgl_logdatasets(base),
         load_openstack_logdatasets(base),
+        load_hadoop_logdatasets(base),
+        load_openstack_paris_logdatasets(base),
+        load_thunderbird_logdatasets(base),
     ]
 
     combined = pd.concat([f for f in frames if not f.empty], ignore_index=True)
