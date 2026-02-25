@@ -43,7 +43,7 @@ UNIFIED_FEATURES = [
 ]
 
 MAX_HDFS_ROWS = 20000
-MAX_LOG_ROWS = 20000
+MAX_LOG_ROWS = 5000
 
 
 def _ensure_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -266,27 +266,7 @@ def load_hdfs_logdatasets(base: Path) -> pd.DataFrame:
     abnormal_file = root / "hdfs_test_abnormal"
 
     for file_path, label in [(normal_file, 0), (abnormal_file, 1)]:
-        if not file_path.exists():
-            continue
-        lines: List[str] = []
-        with file_path.open("r", encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    lines.append(line)
-        if len(lines) > MAX_LOG_ROWS:
-            lines = list(pd.Series(lines).sample(MAX_LOG_ROWS, random_state=42))
-        for line in lines:
-            token_count = float(len(line.split()))
-            rows.append(
-                {
-                    "risk_label": label,
-                    "anomaly_rate": 0.0,
-                    "error_rate": 0.0,
-                    "req_rate": token_count,
-                    "avg_rt": 0.0,
-                }
-            )
+        rows.extend(_load_sequence_file(file_path, label, "HDFS_logdatasets"))
 
     if not rows:
         return pd.DataFrame()
@@ -304,27 +284,7 @@ def load_bgl_logdatasets(base: Path) -> pd.DataFrame:
     abnormal_file = root / "bgl_test_abnormal"
 
     for file_path, label in [(normal_file, 0), (abnormal_file, 1)]:
-        if not file_path.exists():
-            continue
-        lines: List[str] = []
-        with file_path.open("r", encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    lines.append(line)
-        if len(lines) > MAX_LOG_ROWS:
-            lines = list(pd.Series(lines).sample(MAX_LOG_ROWS, random_state=42))
-        for line in lines:
-            token_count = float(len(line.split()))
-            rows.append(
-                {
-                    "risk_label": label,
-                    "anomaly_rate": 0.0,
-                    "error_rate": 0.0,
-                    "req_rate": token_count,
-                    "avg_rt": 0.0,
-                }
-            )
+        rows.extend(_load_sequence_file(file_path, label, "BGL_logdatasets"))
 
     if not rows:
         return pd.DataFrame()
@@ -342,27 +302,7 @@ def load_openstack_logdatasets(base: Path) -> pd.DataFrame:
     abnormal_file = root / "openstack_test_abnormal"
 
     for file_path, label in [(normal_file, 0), (abnormal_file, 1)]:
-        if not file_path.exists():
-            continue
-        lines: List[str] = []
-        with file_path.open("r", encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    lines.append(line)
-        if len(lines) > MAX_LOG_ROWS:
-            lines = list(pd.Series(lines).sample(MAX_LOG_ROWS, random_state=42))
-        for line in lines:
-            token_count = float(len(line.split()))
-            rows.append(
-                {
-                    "risk_label": label,
-                    "anomaly_rate": 0.0,
-                    "error_rate": 0.0,
-                    "req_rate": token_count,
-                    "avg_rt": 0.0,
-                }
-            )
+        rows.extend(_load_sequence_file(file_path, label, "OpenStack_logdatasets"))
 
     if not rows:
         return pd.DataFrame()
@@ -383,18 +323,41 @@ def _load_sequence_file(path: Path, label: int, source: str) -> List[Dict[str, f
     if len(lines) > MAX_LOG_ROWS:
         lines = list(pd.Series(lines).sample(MAX_LOG_ROWS, random_state=42))
     for line in lines:
-        token_count = float(len(line.split()))
+        token_count, token_mean, token_p95 = _sequence_stats(line)
         rows.append(
             {
                 "risk_label": label,
                 "anomaly_rate": 0.0,
                 "error_rate": 0.0,
                 "req_rate": token_count,
-                "avg_rt": 0.0,
+                "avg_rt": token_mean,
+                "perc95_rt": token_p95,
                 "source_dataset": source,
             }
         )
     return rows
+
+
+def _sequence_stats(line: str) -> tuple[float, float, float]:
+    """
+    Extract simple numeric stats from log-sequence lines.
+    The sequences are token IDs (e.g., "id,59 3 79 ...").
+    We use them as a weak proxy for request volume/latency.
+    """
+    if "," in line:
+        _, payload = line.split(",", 1)
+    else:
+        payload = line
+    tokens: List[int] = []
+    for part in payload.strip().split():
+        try:
+            tokens.append(int(part))
+        except Exception:
+            continue
+    if not tokens:
+        return 0.0, 0.0, 0.0
+    arr = np.array(tokens, dtype=float)
+    return float(len(arr)), float(arr.mean()), float(np.percentile(arr, 95))
 
 
 def load_hadoop_logdatasets(base: Path) -> pd.DataFrame:
@@ -446,7 +409,7 @@ def load_thunderbird_logdatasets(base: Path) -> pd.DataFrame:
             continue
         lines: List[str] = []
         with tarfile.open(archive, "r:gz") as tf:
-            for member in tf.getmembers():
+            for member in tf:
                 if not member.isfile():
                     continue
                 f = tf.extractfile(member)
@@ -461,17 +424,20 @@ def load_thunderbird_logdatasets(base: Path) -> pd.DataFrame:
                         lines.append(line)
                 if len(lines) >= MAX_LOG_ROWS:
                     break
+            if len(lines) >= MAX_LOG_ROWS:
+                break
         if len(lines) > MAX_LOG_ROWS:
             lines = list(pd.Series(lines).sample(MAX_LOG_ROWS, random_state=42))
         for line in lines:
-            token_count = float(len(line.split()))
+            token_count, token_mean, token_p95 = _sequence_stats(line)
             rows.append(
                 {
                     "risk_label": label,
                     "anomaly_rate": 0.0,
                     "error_rate": 0.0,
                     "req_rate": token_count,
-                    "avg_rt": 0.0,
+                    "avg_rt": token_mean,
+                    "perc95_rt": token_p95,
                     "source_dataset": "Thunderbird_logdatasets",
                 }
             )
@@ -485,6 +451,11 @@ def load_thunderbird_logdatasets(base: Path) -> pd.DataFrame:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Merge datasets into unified training schema")
     parser.add_argument("--out", default="data/csv/unified_training_dataset.csv")
+    parser.add_argument(
+        "--include-thunderbird",
+        action="store_true",
+        help="Include Thunderbird log dataset (may be slow)",
+    )
     args = parser.parse_args()
 
     base = Path(__file__).resolve().parents[3]
@@ -498,8 +469,9 @@ def main() -> None:
         load_openstack_logdatasets(base),
         load_hadoop_logdatasets(base),
         load_openstack_paris_logdatasets(base),
-        load_thunderbird_logdatasets(base),
     ]
+    if args.include_thunderbird:
+        frames.append(load_thunderbird_logdatasets(base))
 
     combined = pd.concat([f for f in frames if not f.empty], ignore_index=True)
     out_path = Path(args.out)
