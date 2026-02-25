@@ -274,6 +274,36 @@ def load_hdfs_logdatasets(base: Path) -> pd.DataFrame:
     return _finalize(df, "HDFS_logdatasets")
 
 
+def load_hdfs_loghub_logdatasets(base: Path) -> pd.DataFrame:
+    root = base / "data" / "datasets" / "lo2" / "log-datasets" / "hdfs_loghub"
+    if not root.exists():
+        return pd.DataFrame()
+
+    rows: List[Dict[str, float]] = []
+    rows.extend(_load_sequence_file(root / "hdfs_test_normal", 0, "HDFS_LogHub_logdatasets"))
+    rows.extend(_load_sequence_file(root / "hdfs_test_abnormal", 1, "HDFS_LogHub_logdatasets"))
+
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    return _finalize(df, "HDFS_LogHub_logdatasets")
+
+
+def load_hdfs_xu_logdatasets(base: Path) -> pd.DataFrame:
+    root = base / "data" / "datasets" / "lo2" / "log-datasets" / "hdfs_xu"
+    if not root.exists():
+        return pd.DataFrame()
+
+    rows: List[Dict[str, float]] = []
+    rows.extend(_load_sequence_file(root / "hdfs_test_normal", 0, "HDFS_Xu_logdatasets"))
+    rows.extend(_load_sequence_file(root / "hdfs_test_abnormal", 1, "HDFS_Xu_logdatasets"))
+
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    return _finalize(df, "HDFS_Xu_logdatasets")
+
+
 def load_bgl_logdatasets(base: Path) -> pd.DataFrame:
     root = base / "data" / "datasets" / "lo2" / "log-datasets" / "bgl_loghub"
     if not root.exists():
@@ -290,6 +320,21 @@ def load_bgl_logdatasets(base: Path) -> pd.DataFrame:
         return pd.DataFrame()
     df = pd.DataFrame(rows)
     return _finalize(df, "BGL_logdatasets")
+
+
+def load_bgl_cfdr_logdatasets(base: Path) -> pd.DataFrame:
+    root = base / "data" / "datasets" / "lo2" / "log-datasets" / "bgl_cfdr"
+    if not root.exists():
+        return pd.DataFrame()
+
+    rows: List[Dict[str, float]] = []
+    rows.extend(_load_sequence_file(root / "bgl_test_normal", 0, "BGL_CFDR_logdatasets"))
+    rows.extend(_load_sequence_file(root / "bgl_test_abnormal", 1, "BGL_CFDR_logdatasets"))
+
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(rows)
+    return _finalize(df, "BGL_CFDR_logdatasets")
 
 
 def load_openstack_logdatasets(base: Path) -> pd.DataFrame:
@@ -465,7 +510,10 @@ def main() -> None:
         load_eadro(base),
         load_hdfs_parquet(base),
         load_hdfs_logdatasets(base),
+        load_hdfs_loghub_logdatasets(base),
+        load_hdfs_xu_logdatasets(base),
         load_bgl_logdatasets(base),
+        load_bgl_cfdr_logdatasets(base),
         load_openstack_logdatasets(base),
         load_hadoop_logdatasets(base),
         load_openstack_paris_logdatasets(base),
