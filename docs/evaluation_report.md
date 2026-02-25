@@ -6,9 +6,9 @@ Label counts: {0: 51525, 1: 51525}
 Label share: {0: 0.5, 1: 0.5}
 
 ## Unified Model
-Accuracy: 0.9997
+Accuracy: 0.9008
 Confusion Matrix:
-`[[12878, 4], [4, 12877]]`
+`[[11899, 983], [1572, 11309]]`
 
 ## Baseline Model
 Accuracy: 0.5000

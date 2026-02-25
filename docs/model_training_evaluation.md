@@ -1,63 +1,71 @@
 # DevArchAI Training and Evaluation Narrative (Unified Model)
 
-This project uses one unified DevArchAI model as the primary predictor.
-Other models (baseline and GNN) are evaluation-only baselines used to validate
-that the unified model performs better, not separate system models.
+DevArchAI is presented as a **single unified model** that combines structural
+dependency reasoning, telemetry signals, and fault-impact indicators into one
+prediction pipeline. Supporting models (baseline and GNN) are **evaluation-only**
+benchmarks and are not part of the production inference path.
 
 ## 1) Primary Model (Unified DevArchAI)
-File: `data/models/devarchai_unified_model.pkl`
-Trainer: `core/ml/train_unified_model.py`
-Algorithm: RandomForestClassifier inside a preprocessing pipeline
+**File:** `data/models/devarchai_unified_model.pkl`  
+**Trainer:** `core/ml/train_unified_model.py`  
+**Algorithm:** RandomForestClassifier inside a preprocessing pipeline
 
-Input features (unified):
-- Structural graph features (fan-in/out, centrality, depth, gateway, config flags)
-- Runtime anomaly signals (error rate, request rate, latency, etc.)
+**Input features (unified):**
+- Structural graph features (fan-in/out, centrality, depth, gateway/config flags)
+- Runtime anomaly signals (error rate, request rate, latency)
 - Fault impact metrics (fault injection count, impact score)
 
-Why this is the main model:
-It combines structure + behavior + fault signals into one predictor, aligning
-directly with the proposal's "unified DevArchAI" concept.
+**Why this is the main model:**  
+It merges structure + behavior + fault indicators into a single predictor, aligned
+to the DevArchAI system design.
 
 ## 2) Baseline (Evaluation Only)
-File: `data/models/devarchai_structural_baseline.pkl`
-Trainer: `core/ml/train_baseline_model.py`
-Algorithm: RandomForest on structural features only
+**File:** `data/models/devarchai_structural_baseline.pkl`  
+**Trainer:** `core/ml/train_baseline_model.py`  
+**Algorithm:** RandomForest on structural features only
 
-Purpose: prove that unified signals outperform structure-only prediction.
+Purpose: demonstrate improvement from adding runtime + fault signals.
 
 ## 3) GNN (Experimental Validation Only)
-File: `data/models/devarchai_gnn_model.pt`
-Trainer: `core/ml/train_gnn_model.py`
-Algorithm: Graph Neural Network (node classifier)
+**File:** `data/models/devarchai_gnn_model.pt`  
+**Trainer:** `core/ml/train_gnn_model.py`  
+**Algorithm:** Graph Neural Network (node classifier)
 
-Purpose: validate graph reasoning ideas. Not used as the main production predictor.
+Purpose: validate graph-based reasoning. Not used in production inference.
 
 ## 4) Datasets Used
-Core training dataset:
-`data/csv/structural_training_dataset.csv`
+**Unified training dataset:**  
+`data/csv/unified_training_dataset_balanced.csv`
 
-Additional datasets collected for expansion and evaluation:
+**Sources included:**
 - LO2 (logs + metrics)
 - RS-Anomic (RobotShop anomalies)
 - Eadro (SN + TT datasets)
-- MicroDepGraph (GraphML service graphs)
-- HDFS / log-datasets (log anomaly benchmarks)
+- HDFS (parquet + log-datasets)
+- BGL log-datasets
+- OpenStack log-datasets
+- Hadoop log-datasets
+- OpenStack-Paris log-datasets
+- Thunderbird log-datasets
 
-These are prepared and inventoried for expanded training and evaluation.
+## 5) Training and Evaluation Procedure (Single Workflow)
+1. Merge datasets into a unified CSV.
+2. Balance labels (downsample majority class).
+3. Train unified model with stratified split.
+4. Evaluate with accuracy, precision/recall/F1, and confusion matrix.
+5. Compare against baseline (structural-only).
 
-## 5) Training and Evaluation Procedure (Single Story)
-1. Build the unified dataset (structured CSV with all signals).
-2. Train the unified DevArchAI model with a stratified train/test split.
-3. Evaluate with Accuracy + Precision/Recall/F1 + Confusion Matrix.
-4. Compare against baseline (structural-only).
-5. Optionally compare with GNN (graph-only).
+## 6) Data Leakage Fix (Quality Control)
+Initial log-sequence datasets caused **label leakage** when label-derived fields
+were used as features. This was corrected by:
+- Removing label-derived signals from log datasets.
+- Using content-derived proxies (e.g., token counts) instead.
 
-## 6) Version Consistency
-The unified model and baseline were retrained using the current environment
-to avoid scikit-learn version mismatch warnings.
+After this fix, accuracy dropped to a **realistic** range and the model became
+defensible for evaluation.
 
 ---
 
-Result:
-DevArchAI is presented as a single unified model with supporting evaluation
-baselines. This keeps the narrative clean and proposal-aligned.
+**Result:**  
+DevArchAI is a single unified model with evaluation baselines, trained via one
+consistent workflow and validated using multi-source datasets.
