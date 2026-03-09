@@ -54,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
           body: JSON.stringify({
             project_path: projectPath,
             log_path: logPath || null,
-            use_gnn: true,
+            use_gnn: false,
             prometheus_url: prometheusUrl || null,
             otel_endpoint: otelEndpoint || null,
             debug_telemetry: debugTelemetry?.value ?? false
