@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -100,8 +100,47 @@
       display: flex; align-items: center; justify-content: center;
       color: #94a3b8;
       font-size: 12px;
+      position: relative;
+      overflow: hidden;
     }
 
+    .graph-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(10,12,18,0.92);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+      color: #e9edf7;
+      padding: 8px 10px;
+      font-size: 11px;
+      border-radius: 8px;
+      opacity: 0;
+      transform: translate(-50%, -120%);
+      transition: opacity 120ms ease;
+      max-width: 240px;
+      z-index: 5;
+    }
+
+    .graph-tooltip .muted { color: #9aa6c3; font-size: 10px; }
+
+    .graph-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-top: 6px; color: var(--muted); font-size: 12px;
+    }
+
+    .graph-legend {
+      display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+
+    .legend-dot {
+      width: 10px; height: 10px; border-radius: 999px; display: inline-block;
+      margin-right: 6px; border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .graph-hint {
+      font-family: 'IBM Plex Mono', monospace;
+      opacity: 0.8;
+    }
     footer { margin-top: 28px; font-size: 12px; color: var(--muted); text-align: center; }
   </style>
 </head>
@@ -113,15 +152,15 @@
   </div>
 
   <div class="hero">
-    <div class="pill">DevArchAI Unified Model • Live Inference • UI v4</div>
+    <div class="pill">DevArchAI Unified Model - Live Inference - UI v4</div>
     <div class="hero-grid" style="margin-top:10px;">
       <div>
         <div style="font-size:11px;text-transform:uppercase;color:var(--muted);">Most Critical Service</div>
-        <div id="hero-service" style="font-size:18px; font-weight:600;">—</div>
+        <div id="hero-service" style="font-size:18px; font-weight:600;">--</div>
         <div class="meta">
-          <span class="metric" id="hero-risk">Risk: —</span>
-          <span class="metric" id="hero-confidence">Conf: —</span>
-          <span class="metric" id="hero-model">Model: —</span>
+          <span class="metric" id="hero-risk">Risk: --</span>
+          <span class="metric" id="hero-confidence">Conf: --</span>
+          <span class="metric" id="hero-model">Model: --</span>
         </div>
       </div>
       <div>
@@ -161,13 +200,24 @@
   <div>
     <h2>Service Dependency Graph</h2>
     <div id="dependency-graph">No graph data available.</div>
+    <div id="graph-tooltip" class="graph-tooltip"></div>
+    <div class="graph-toolbar">
+      <div class="graph-legend">
+        <span><span class="legend-dot" style="background:#3ddc97"></span>Low</span>
+        <span><span class="legend-dot" style="background:#ffb347"></span>Medium</span>
+        <span><span class="legend-dot" style="background:#ff6b6b"></span>High</span>
+        <span><span class="legend-dot" style="background:#7c5cff"></span>Unknown</span>
+      </div>
+      <div class="graph-hint">Scroll to zoom, drag to pan</div>
+    </div>
   </div>
 
   <footer>
-    ML-Driven • Dependency-Aware • Explainable
+    ML-Driven - Dependency-Aware - Explainable
   </footer>
 
   <script id="devarchai-data" type="application/json" nonce="__CSP_NONCE__">__DEVARCHAI_DATA__</script>
   <script nonce="__CSP_NONCE__" src="__SCRIPT_URI__"></script>
 </body>
 </html>
+
