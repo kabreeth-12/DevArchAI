@@ -70,3 +70,4 @@ petclinic_logs/
 # Local CI/CD samples
 # ----------------------
 real_gh_run.json
+train_ticket_logs/
