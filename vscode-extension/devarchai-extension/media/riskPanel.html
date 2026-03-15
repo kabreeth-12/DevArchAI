@@ -128,6 +128,26 @@
       gap: 12px; margin-top: 6px; color: var(--muted); font-size: 12px;
     }
 
+    .graph-controls {
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    .graph-btn {
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(26,40,60,0.45);
+      color: #d4daef;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .graph-btn.active {
+      background: rgba(124,92,255,0.35);
+      border-color: rgba(124,92,255,0.8);
+      color: #fff;
+    }
+
     .graph-legend {
       display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap;
     }
@@ -202,13 +222,26 @@
     <div id="dependency-graph">No graph data available.</div>
     <div id="graph-tooltip" class="graph-tooltip"></div>
     <div class="graph-toolbar">
+      <div class="graph-controls">
+        <button class="graph-btn active" data-risk="all">All</button>
+        <button class="graph-btn" data-risk="high">High only</button>
+        <button class="graph-btn" data-risk="medium">Medium only</button>
+        <button class="graph-btn" data-risk="low">Low only</button>
+        <button id="graph-label-toggle" class="graph-btn">Labels: smart</button>
+        <input id="graph-search" type="text" placeholder="Search service" style="border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:4px 8px;background:rgba(18,23,35,0.9);color:#e6ecff;min-width:180px;" />
+      </div>
       <div class="graph-legend">
         <span><span class="legend-dot" style="background:#3ddc97"></span>Low</span>
         <span><span class="legend-dot" style="background:#ffb347"></span>Medium</span>
         <span><span class="legend-dot" style="background:#ff6b6b"></span>High</span>
         <span><span class="legend-dot" style="background:#7c5cff"></span>Unknown</span>
       </div>
-      <div class="graph-hint">Scroll to zoom, drag to pan</div>
+      <div class="graph-hint">Scroll to zoom, drag to pan, click nodes for details</div>
+    </div>
+    <div id="graph-service-list" class="card" style="margin-top:10px;max-height:140px;overflow:auto;font-size:12px;"></div>
+    <div id="graph-details" class="card" style="margin-top:10px;">
+      <strong>Selected service</strong><br>
+      <span id="graph-details-content">Click a node to inspect risk + dependencies.</span>
     </div>
   </div>
 
