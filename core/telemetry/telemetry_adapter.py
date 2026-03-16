@@ -102,10 +102,41 @@ def _prom_query(base_url: str, prom_query: str) -> Dict[str, float]:
 
 def _extract_service_label(metric: Dict[str, str]) -> Optional[str]:
     # Try common label names (Petclinic uses "job")
-    for key in ("job", "service", "service_name", "app", "k8s_app", "application"):
+    if "job" in metric and metric.get("job") != "train-ticket":
+        return metric.get("job")
+
+    # For train-ticket, prefer service label names; fallback to instance-port mapping.
+    for key in ("service", "service_name", "app", "k8s_app", "application"):
         if key in metric:
             return metric[key]
-    return None
+
+    instance = metric.get("instance")
+    if instance:
+        host_port = instance.split("/")[0]
+        if ":" in host_port:
+            port = host_port.split(":")[-1]
+            # A quick mapping for legacy train-ticket ports to service names
+            train_ticket_port_map = {
+                "12340": "ts-auth-service",
+                "12342": "ts-user-service",
+                "11178": "ts-route-service",
+                "14567": "ts-train-service",
+                "12345": "ts-station-service",
+                "12031": "ts-order-service",
+                "12032": "ts-order-other-service",
+                "15678": "ts-verification-code-service",
+                "15679": "ts-config-service",
+                "15680": "ts-basic-service",
+                "15681": "ts-ticketinfo-service",
+                "16579": "ts-price-service",
+                "17853": "ts-notification-service",
+                "11188": "ts-security-service",
+                "14568": "ts-preserve-service",
+                "14569": "ts-preserve-other-service",
+            }
+            return train_ticket_port_map.get(port, metric.get("job"))
+
+    return metric.get("job") or None
 
 
 def _coerce_float_map(raw: Dict[str, Dict[str, object]]) -> Dict[str, Dict[str, float]]:

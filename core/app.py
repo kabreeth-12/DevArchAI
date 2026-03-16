@@ -231,6 +231,7 @@ def analyse_project(request: AnalyseRequest):
     if telemetry_features:
         normalized = {}
         service_set = set(services)
+
         for key, value in telemetry_features.items():
             if key in service_set:
                 normalized[key] = value
@@ -239,7 +240,13 @@ def analyse_project(request: AnalyseRequest):
             if prefixed in service_set:
                 normalized[prefixed] = value
                 continue
+            # A single train-ticket job metric found: apply to all microservices as fallback.
+            if key == "train-ticket":
+                for svc in services:
+                    normalized.setdefault(svc, {}).update(value)
+                continue
             normalized[key] = value
+
         telemetry_features = normalized
 
     # Step 4: Extract ML features from dependency graph + telemetry
