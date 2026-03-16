@@ -1,16 +1,16 @@
 # DevArchAI Evaluation Report
 
-Dataset: `data\csv\unified_training_dataset_balanced.csv`
-Rows: 70756
-Label counts: {0: 35378, 1: 35378}
-Label share: {0: 0.5, 1: 0.5}
+Dataset: `data\csv\unified_training_dataset.csv`
+Rows: 165071
+Label counts: {0: 129693, 1: 35378}
+Label share: {0: 0.7857, 1: 0.2143}
 
 ## Unified Model
-Accuracy: 0.9374
+Accuracy: 0.9496
 Confusion Matrix:
-`[[8490, 355], [753, 8091]]`
+`[[31103, 1320], [758, 8087]]`
 
 ## Baseline Model
-Accuracy: 0.5000
+Accuracy: 0.7857
 Confusion Matrix:
-`[[8845, 0], [8844, 0]]`
+`[[32423, 0], [8845, 0]]`
