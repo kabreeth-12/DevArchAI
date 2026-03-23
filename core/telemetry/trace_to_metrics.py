@@ -121,6 +121,7 @@ def _compute_metrics(traces: Iterable[List[dict]], service: str) -> Dict[str, fl
 
     if durations_us:
         durations_ms = [d / 1000.0 for d in durations_us]
+        avg_ms = sum(durations_ms) / len(durations_ms)
         if len(durations_ms) >= 20:
             p95 = quantiles(durations_ms, n=20)[18]
         else:
@@ -128,6 +129,7 @@ def _compute_metrics(traces: Iterable[List[dict]], service: str) -> Dict[str, fl
             idx = max(0, math.ceil(0.95 * len(durations_ms)) - 1)
             p95 = durations_ms[idx]
     else:
+        avg_ms = 0.0
         p95 = 0.0
 
     error_rate = (error_count / span_count) if span_count > 0 else 0.0
@@ -135,6 +137,7 @@ def _compute_metrics(traces: Iterable[List[dict]], service: str) -> Dict[str, fl
     return {
         "span_count": float(span_count),
         "trace_error_rate": float(error_rate),
+        "avg_trace_ms": float(avg_ms),
         "p95_trace_ms": float(p95),
     }
 
@@ -159,6 +162,7 @@ def _compute_metrics_jaeger(traces: Iterable[dict], service: str) -> Dict[str, f
 
     if durations_us:
         durations_ms = [d / 1000.0 for d in durations_us]
+        avg_ms = sum(durations_ms) / len(durations_ms)
         if len(durations_ms) >= 20:
             p95 = quantiles(durations_ms, n=20)[18]
         else:
@@ -166,12 +170,14 @@ def _compute_metrics_jaeger(traces: Iterable[dict], service: str) -> Dict[str, f
             idx = max(0, math.ceil(0.95 * len(durations_ms)) - 1)
             p95 = durations_ms[idx]
     else:
+        avg_ms = 0.0
         p95 = 0.0
 
     error_rate = (error_count / span_count) if span_count > 0 else 0.0
     return {
         "span_count": float(span_count),
         "trace_error_rate": float(error_rate),
+        "avg_trace_ms": float(avg_ms),
         "p95_trace_ms": float(p95),
     }
 

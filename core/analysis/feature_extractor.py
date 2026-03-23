@@ -57,9 +57,9 @@ def extract_service_features(
         # --------------------------------------------------
         # Observability / anomaly placeholders (prototype)
         # --------------------------------------------------
-        anomaly_rate = 0.05
-        kaggle_anomaly_rate = 0.04
-        fault_injection_count = 1.0
+        anomaly_rate = 0.0
+        kaggle_anomaly_rate = 0.0
+        fault_injection_count = 0.0
         avg_affected_services = max(1.0, float(reachable_services))
 
         # Composite impact score (interpretable heuristic)

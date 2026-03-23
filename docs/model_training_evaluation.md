@@ -15,6 +15,10 @@ benchmarks and are not part of the production inference path.
 - Runtime anomaly signals (error rate, request rate, latency)
 - Fault impact metrics (fault injection count, impact score)
 
+**Risk tiering (UI):**  
+If the trained model is binary, DevArchAI maps the predicted anomaly probability
+into Low/Medium/High risk tiers using thresholds (default: 0.4 and 0.7).
+
 **Why this is the main model:**  
 It merges structure + behavior + fault indicators into a single predictor, aligned
 to the DevArchAI system design.

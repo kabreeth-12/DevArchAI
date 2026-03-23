@@ -27,6 +27,9 @@ _SIGNAL_KEYWORDS = [
     "connection", "rejected", "500", "503", "504", "4xx", "5xx"
 ]
 
+_CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
+_TRAIN_TICKET_SERVICE_LOG = re.compile(r"train-ticket-ts-.*-service-.*\.log$", re.IGNORECASE)
+
 
 @dataclass
 class RcaResult:
@@ -59,14 +62,21 @@ class RcaRagEngine:
         refs: List[str] = []
 
         if log_path.is_dir():
-            for file in log_path.rglob("*"):
-                if file.is_file():
-                    content = file.read_text(encoding="utf-8", errors="ignore")
-                    for chunk in _chunk_text(content, max_lines=40):
-                        docs.append(chunk)
-                        refs.append(str(file))
+            files = [f for f in log_path.rglob("*") if f.is_file()]
+            # Prefer Train-Ticket service logs when available
+            preferred = [f for f in files if _TRAIN_TICKET_SERVICE_LOG.search(f.name)]
+            if preferred:
+                files = preferred
+
+            for file in files:
+                content = file.read_text(encoding="utf-8", errors="ignore")
+                content = _clean_text(content)
+                for chunk in _chunk_text(content, max_lines=40):
+                    docs.append(chunk)
+                    refs.append(str(file))
         else:
             content = log_path.read_text(encoding="utf-8", errors="ignore")
+            content = _clean_text(content)
             for chunk in _chunk_text(content, max_lines=40):
                 docs.append(chunk)
                 refs.append(str(log_path))
@@ -156,6 +166,14 @@ def _chunk_text(text: str, max_lines: int = 40) -> List[str]:
         if chunk.strip():
             chunks.append(chunk)
     return chunks
+
+
+def _clean_text(text: str) -> str:
+    if not text:
+        return ""
+    # Drop nulls + control chars while preserving tabs/newlines for chunking.
+    text = text.replace("\x00", "")
+    return _CONTROL_CHARS.sub("", text)
 
 
 def _extractive_summary(snippets: List[str], refs: List[str]) -> str:
