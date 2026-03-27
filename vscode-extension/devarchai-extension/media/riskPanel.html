@@ -61,6 +61,7 @@
     .card.high { border: 1px solid rgba(255,107,107,0.5); }
     .card.medium { border: 1px solid rgba(255,179,71,0.5); }
     .card.low { border: 1px solid rgba(61,220,151,0.45); }
+    .card.unknown { border: 1px solid rgba(124,92,255,0.45); }
 
     .meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; color: var(--muted); font-size: 12px; }
 
@@ -77,6 +78,11 @@
     .risk-high { background: rgba(255,107,107,0.15); color: #ff9b9b; border: 1px solid rgba(255,107,107,0.4); }
     .risk-medium { background: rgba(255,179,71,0.15); color: #ffd39c; border: 1px solid rgba(255,179,71,0.4); }
     .risk-low { background: rgba(61,220,151,0.15); color: #a9f3d2; border: 1px solid rgba(61,220,151,0.35); }
+    .risk-unknown { background: rgba(124,92,255,0.15); color: #c9b8ff; border: 1px solid rgba(124,92,255,0.4); }
+
+    .metric.telemetry-on { background: rgba(61,220,151,0.12); border-color: rgba(61,220,151,0.35); color: #bff5dd; }
+    .metric.telemetry-off { background: rgba(255,179,71,0.12); border-color: rgba(255,179,71,0.35); color: #ffd9a6; }
+    .metric.telemetry-na { background: rgba(124,92,255,0.12); border-color: rgba(124,92,255,0.35); color: #cdbbff; }
 
     .rca-panel {
       background: linear-gradient(180deg, #141a2a 0%, #0f1320 100%);
@@ -161,6 +167,20 @@
       font-family: 'IBM Plex Mono', monospace;
       opacity: 0.8;
     }
+
+    .section-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0 12px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .toolbar-note {
+      font-family: 'IBM Plex Mono', monospace;
+      opacity: 0.7;
+    }
     footer { margin-top: 28px; font-size: 12px; color: var(--muted); text-align: center; }
   </style>
 </head>
@@ -181,6 +201,7 @@
           <span class="metric" id="hero-risk">Risk: --</span>
           <span class="metric" id="hero-confidence">Conf: --</span>
           <span class="metric" id="hero-model">Model: --</span>
+          <span class="metric" id="hero-telemetry">Telemetry: --</span>
         </div>
       </div>
       <div>
@@ -199,6 +220,10 @@
 
   <div>
     <h2>Risk Breakdown</h2>
+    <div class="section-toolbar">
+      <button id="risk-sort-toggle" class="graph-btn">Sort: confidence high -> low</button>
+      <span class="toolbar-note">Click to toggle sort order</span>
+    </div>
     <div id="risk-container" class="grid"></div>
   </div>
 

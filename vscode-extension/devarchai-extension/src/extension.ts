@@ -22,18 +22,21 @@ export function activate(context: vscode.ExtensionContext) {
       const logPath = await vscode.window.showInputBox({
         prompt: 'Optional log path for RCA (leave empty to skip)',
         placeHolder: 'e.g. D:\\logs or ./logs',
+        value: 'D:\\IIT Syllabus\\4th Year\\Final Year Project\\IPD\\Prep\\IPD - Prototype - Implementation\\DevArchAI\\train_ticket_logs',
         ignoreFocusOut: true
       });
 
       const prometheusUrl = await vscode.window.showInputBox({
         prompt: 'Optional Prometheus URL (leave empty to skip)',
         placeHolder: 'e.g. http://localhost:9091',
+        value: 'http://127.0.0.1:9090',
         ignoreFocusOut: true
       });
 
       const otelEndpoint = await vscode.window.showInputBox({
         prompt: 'Optional trace metrics URL (leave empty to skip)',
         placeHolder: 'e.g. http://localhost:8088/trace_metrics.json',
+        value: 'http://127.0.0.1:8088/trace_metrics.json',
         ignoreFocusOut: true
       });
 

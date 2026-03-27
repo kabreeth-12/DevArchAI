@@ -24,31 +24,118 @@
     return;
   }
 
+  const resolveRiskLevel = (item) => {
+    const raw = item?.predicted_risk_level;
+    const asNum = Number(raw);
+    if (Number.isFinite(asNum)) return asNum;
+    const asStr = String(raw || '').toLowerCase();
+    if (asStr === 'high') return 2;
+    if (asStr === 'medium') return 1;
+    if (asStr === 'low') return 0;
+    return -1;
+  };
+
+  const resolveConfidencePercent = (item) => {
+    const raw = item?.risk_confidence ?? item?.confidence ?? item?.risk_score ?? item?.score ?? item?.probability;
+    const num = Number(raw);
+    if (!Number.isFinite(num)) return null;
+    const pct = num > 1 ? num : num * 100;
+    return Math.max(0, Math.min(pct, 100));
+  };
+
+  const formatPercent = (value) => {
+    if (value === null) return 'n/a';
+    if (value < 1) return `${value.toFixed(2)}%`;
+    if (value < 10) return `${value.toFixed(1)}%`;
+    return `${Math.round(value)}%`;
+  };
+
+  const riskLabel = (level) => (level === 2 ? 'HIGH' : level === 1 ? 'MEDIUM' : level === 0 ? 'LOW' : 'UNKNOWN');
+  const riskClass = (level) => (level === 2 ? 'high' : level === 1 ? 'medium' : level === 0 ? 'low' : 'unknown');
+  const riskBadgeClass = (level) => (level === 2 ? 'risk-high' : level === 1 ? 'risk-medium' : level === 0 ? 'risk-low' : 'risk-unknown');
+  const telemetryServices = new Set(Object.keys(data.telemetry_debug || {}));
+  const telemetryKnown = telemetryServices.size > 0;
+
+  const resolveTelemetryBadge = (service) => {
+    if (!telemetryKnown) return { label: 'Telemetry: n/a', className: 'telemetry-na' };
+    if (telemetryServices.has(service)) return { label: 'Telemetry: yes', className: 'telemetry-on' };
+    return { label: 'Telemetry: none', className: 'telemetry-off' };
+  };
+
+  let riskSortOrder = 'desc'; // desc = high->low confidence
+  const getConfidenceNumeric = (item) => {
+    const pct = resolveConfidencePercent(item);
+    return pct === null ? -1 : pct;
+  };
+  const sortRisks = (list) => {
+    const dir = riskSortOrder === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => {
+      const ca = getConfidenceNumeric(a);
+      const cb = getConfidenceNumeric(b);
+      if (ca !== cb) return (ca - cb) * dir;
+      const ra = resolveRiskLevel(a);
+      const rb = resolveRiskLevel(b);
+      if (ra !== rb) return rb - ra;
+      return String(a?.service || '').localeCompare(String(b?.service || ''));
+    });
+  };
+  const updateRiskSortToggle = () => {
+    const btn = document.getElementById('risk-sort-toggle');
+    if (!btn) return;
+    const label = riskSortOrder === 'desc'
+      ? 'Sort: confidence high -> low'
+      : 'Sort: confidence low -> high';
+    btn.textContent = label;
+  };
+
   try {
     const container = document.getElementById('risk-container');
     debugStage = 'risk-block';
-    risks.forEach(item => {
-    const level = item.predicted_risk_level;
-    const label = level === 2 ? 'HIGH' : level === 1 ? 'MEDIUM' : 'LOW';
-    const cls = level === 2 ? 'high' : level === 1 ? 'medium' : 'low';
-    const confidence = Math.round(item.risk_confidence * 100);
-    const badgeClass = level === 2 ? 'risk-high' : level === 1 ? 'risk-medium' : 'risk-low';
+    const renderRiskCards = () => {
+      if (!container) return [];
+      container.innerHTML = '';
+      const ordered = sortRisks(risks);
+      ordered.forEach(item => {
+        const level = resolveRiskLevel(item);
+        const label = riskLabel(level);
+        const cls = riskClass(level);
+        const confidencePct = resolveConfidencePercent(item);
+        const confidenceLabel = formatPercent(confidencePct);
+        const badgeClass = riskBadgeClass(level);
+        const telemetry = resolveTelemetryBadge(item.service);
+        const reason = item.reason || 'No explanation available.';
 
-    const card = document.createElement('div');
-    card.className = `card ${cls}`;
-    card.innerHTML = `
-      <h3>${item.service}</h3>
-      <div style="margin:6px 0 8px 0;">
-        <span class="risk-badge ${badgeClass}">${label}</span>
-      </div>
-      <div class="meta">
-        <span class="metric">Conf: ${confidence}%</span>
-        ${item.model ? `<span class="metric">Model: ${item.model}</span>` : ''}
-      </div>
-      <p style="margin-top:8px;color:var(--muted);font-size:12px;font-style:italic;">${item.reason}</p>
-    `;
-    container.appendChild(card);
-  });
+        const card = document.createElement('div');
+        card.className = `card ${cls}`;
+        card.innerHTML = `
+          <h3>${item.service}</h3>
+          <div style="margin:6px 0 8px 0;">
+            <span class="risk-badge ${badgeClass}">${label}</span>
+          </div>
+          <div class="meta">
+            <span class="metric">Conf: ${confidenceLabel}</span>
+            ${item.model ? `<span class="metric">Model: ${item.model}</span>` : ''}
+            <span class="metric ${telemetry.className}">${telemetry.label}</span>
+          </div>
+          <p style="margin-top:8px;color:var(--muted);font-size:12px;font-style:italic;">${reason}</p>
+        `;
+        container.appendChild(card);
+      });
+      return ordered;
+    };
+
+    let orderedRisks = renderRiskCards();
+    updateRiskSortToggle();
+
+    const sortToggle = document.getElementById('risk-sort-toggle');
+    if (sortToggle) {
+      sortToggle.addEventListener('click', () => {
+        riskSortOrder = riskSortOrder === 'desc' ? 'asc' : 'desc';
+        updateRiskSortToggle();
+        orderedRisks = renderRiskCards();
+        updateHero(orderedRisks);
+      });
+    }
 
   debugStage = 'rca-block';
   const rcaPanel = document.getElementById('rca-summary');
@@ -127,13 +214,24 @@
     cicdPanel.innerHTML = cards;
   }
 
-  const top = risks && risks.length ? risks[0] : null;
-  document.getElementById('hero-service').textContent = top ? top.service : '--';
-  document.getElementById('hero-risk').textContent = top ? `Risk: ${top.predicted_risk_level}` : 'Risk: --';
-  document.getElementById('hero-confidence').textContent = top ? `Conf: ${Math.round(top.risk_confidence * 100)}%` : 'Conf: --';
-  document.getElementById('hero-model').textContent = top && top.model ? `Model: ${top.model}` : 'Model: --';
-  document.getElementById('hero-count').textContent = risks ? risks.length : 0;
-  document.getElementById('hero-rca').textContent = data.rca_summary ? 'Ready' : 'Unavailable';
+  function updateHero(list) {
+    const top = list && list.length ? list[0] : null;
+    const topLevel = top ? resolveRiskLevel(top) : -1;
+    const topConfidence = top ? formatPercent(resolveConfidencePercent(top)) : '--';
+    const telemetry = top ? resolveTelemetryBadge(top.service) : { label: 'Telemetry: --', className: 'telemetry-na' };
+    document.getElementById('hero-service').textContent = top ? top.service : '--';
+    document.getElementById('hero-risk').textContent = top ? `Risk: ${riskLabel(topLevel)}` : 'Risk: --';
+    document.getElementById('hero-confidence').textContent = top ? `Conf: ${topConfidence}` : 'Conf: --';
+    document.getElementById('hero-model').textContent = top && top.model ? `Model: ${top.model}` : 'Model: --';
+    document.getElementById('hero-count').textContent = risks ? risks.length : 0;
+    document.getElementById('hero-rca').textContent = data.rca_summary ? 'Ready' : 'Unavailable';
+    const telemetryEl = document.getElementById('hero-telemetry');
+    if (telemetryEl) {
+      telemetryEl.textContent = telemetry.label;
+      telemetryEl.className = `metric ${telemetry.className}`;
+    }
+  }
+  updateHero(orderedRisks);
 
   const graphEl = document.getElementById('dependency-graph');
   const nodes = Array.isArray(data.dependency_graph?.nodes)

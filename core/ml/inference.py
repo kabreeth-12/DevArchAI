@@ -148,7 +148,9 @@ class DevArchAIInferenceEngine:
                     risk_level = 1
                 else:
                     risk_level = 0
-                confidence = risk_score
+                # Confidence should reflect the predicted tier (not just the positive class prob)
+                # Low risk => confidence = 1 - risk_score, Medium/High => confidence = risk_score
+                confidence = (1.0 - risk_score) if risk_level == 0 else risk_score
             else:
                 risk_level = int(predictions[idx])
                 confidence = float(max(probabilities[idx]))
