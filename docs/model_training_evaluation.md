@@ -39,34 +39,27 @@ Purpose: validate graph-based reasoning. Not used in production inference.
 
 ## 4) Datasets Used
 **Unified training dataset:**  
-`data/csv/unified_training_dataset_balanced.csv`
+`data/csv/unified_structural_telemetry_dataset.csv`
 
-**Sources included:**
-- LO2 (logs + metrics)
-- RS-Anomic (RobotShop anomalies)
-- Eadro (SN + TT datasets)
-- HDFS (parquet + log-datasets)
-- BGL log-datasets
-- OpenStack log-datasets
-- Hadoop log-datasets
-- OpenStack-Paris log-datasets
-- Thunderbird log-datasets
+**Source structural dataset:**  
+`data/csv/structural_training_dataset.csv` (per-service graph features + fault signals)
 
 ## 5) Training and Evaluation Procedure (Single Workflow)
-1. Merge datasets into a unified CSV.
-2. Balance labels (downsample majority class).
-3. Train unified model with stratified split.
-4. Evaluate with accuracy, precision/recall/F1, and confusion matrix.
-5. Compare against baseline (structural-only).
+1. Build telemetry features without using `risk_label` (no leakage).
+2. Augment each row with feature-aware noise for robustness.
+3. Train unified model with **project-level** train/test split.
+4. Evaluate with accuracy, precision/recall/F1, confusion matrix.
+5. Validate robustness with LOPO-CV (leave-one-project-out).
+6. Compare against structural-only baseline.
 
 ## 6) Data Leakage Fix (Quality Control)
-Initial log-sequence datasets caused **label leakage** when label-derived fields
-were used as features. This was corrected by:
-- Removing label-derived signals from log datasets.
-- Using content-derived proxies (e.g., token counts) instead.
+Earlier telemetry synthesis used `risk_label` directly, causing **label leakage**.
+This was corrected by:
+- Generating telemetry from structural signals and fault impact (not labels).
+- Using project-level splits to prevent train/test contamination.
 
-After this fix, accuracy dropped to a **realistic** range and the model became
-defensible for evaluation.
+After this fix, accuracy moved to a **realistic** range and the evaluation is
+defensible for reporting.
 
 ---
 
