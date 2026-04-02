@@ -1,48 +1,62 @@
 {
-  "dataset": "D:\\IIT Syllabus\\4th Year\\Final Year Project\\IPD\\Prep\\IPD - Prototype - Implementation\\DevArchAI\\data\\csv\\unified_structural_telemetry_dataset.csv",
-  "total_rows": 1265,
-  "projects": {
-    "train": [
-      "Blog_Microservices",
-      "CQRS_microservice_application",
-      "Consul_demo",
-      "DevArchAI",
-      "E-Commerce",
-      "EnterprisePlanner",
-      "Lakeside",
-      "Leylan_Open_Source_Internet_of_Things",
-      "OnlineBoutique",
-      "Open-loyalty",
-      "OtelDemo",
-      "Robot_Shop",
-      "ShareBike",
-      "SockShop",
-      "Spinnaker",
-      "Vehicle-Tracking",
-      "eShopOnContainers",
-      "spring-cloud-microservice",
-      "spring-cloud-netflix",
-      "spring-petclinic"
-    ],
-    "test": [
-      "FTGO",
-      "HotelReservation",
-      "Microservices_book",
-      "Pitstop_Garage_Management_System",
-      "Tap-And-Eat-MicroServices"
-    ]
-  },
+  "experiment": "Final Clean Experiment",
+  "dataset": "data/csv/structural_training_dataset.csv",
+  "rows": 253,
+  "projects": 25,
+  "augmentation": "none",
+  "telemetry": "generated from graph structure + label (same formula as Exp C, seed=42)",
+  "split": "project-level 80/20",
+  "train_projects": [
+    "Blog_Microservices",
+    "CQRS_microservice_application",
+    "Consul_demo",
+    "DevArchAI",
+    "E-Commerce",
+    "EnterprisePlanner",
+    "Lakeside",
+    "Leylan_Open_Source_Internet_of_Things",
+    "OnlineBoutique",
+    "Open-loyalty",
+    "OtelDemo",
+    "Robot_Shop",
+    "ShareBike",
+    "SockShop",
+    "Spinnaker",
+    "Vehicle-Tracking",
+    "eShopOnContainers",
+    "spring-cloud-microservice",
+    "spring-cloud-netflix",
+    "spring-petclinic"
+  ],
+  "test_projects": [
+    "FTGO",
+    "HotelReservation",
+    "Microservices_book",
+    "Pitstop_Garage_Management_System",
+    "Tap-And-Eat-MicroServices"
+  ],
+  "train_rows": 204,
+  "test_rows": 49,
   "train_dist": {
-    "Low": 755,
-    "Medium": 185,
-    "High": 80
+    "Low": 151,
+    "Medium": 37,
+    "High": 16
   },
   "test_dist": {
-    "Low": 205,
-    "Medium": 30,
-    "High": 10
+    "Low": 41,
+    "Medium": 6,
+    "High": 2
+  },
+  "rf_params": {
+    "n_estimators": 100,
+    "max_depth": 15,
+    "min_samples_split": 2,
+    "class_weight": "balanced",
+    "random_state": 42,
+    "n_jobs": -1
   },
   "unified_model": {
+    "n_features": 24,
     "features": [
       "fan_in",
       "fan_out",
@@ -69,11 +83,10 @@
       "req_ko",
       "error_rate"
     ],
-    "n_features": 24,
-    "accuracy": 1.0,
-    "high_f1": 1.0,
-    "macro_f1": 1.0,
-    "per_class": {
+    "holdout_accuracy": 1.0,
+    "holdout_high_f1": 1.0,
+    "holdout_macro_f1": 1.0,
+    "per_class_holdout": {
       "Low": {
         "precision": 1.0,
         "recall": 1.0,
@@ -90,55 +103,71 @@
         "f1-score": 1.0
       }
     },
-    "confusion_matrix": [
+    "confusion_matrix_holdout": [
       [
-        205,
+        41,
         0,
         0
       ],
       [
         0,
-        30,
+        6,
         0
       ],
       [
         0,
         0,
-        10
+        2
       ]
     ],
-    "lopo_accuracy_mean": 0.9919,
-    "lopo_accuracy_std": 0.024,
-    "lopo_high_f1_mean": 0.4335,
-    "lopo_macro_f1_mean": 0.9779,
+    "cv_accuracy_mean": 0.9961,
+    "cv_accuracy_std": 0.0078,
+    "cv_accuracy_folds": [
+      1.0,
+      0.9804,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "cv_macro_f1_mean": 0.9866,
+    "cv_macro_f1_std": 0.0269,
+    "cv_macro_f1_folds": [
+      1.0,
+      0.9328,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "cv_high_f1": 0.9714,
     "feature_importances": {
-      "kaggle_anomaly_rate": 0.2269,
-      "anomaly_rate": 0.2148,
-      "error_rate": 0.2144,
-      "req_ko": 0.1086,
-      "perc95_rt": 0.0254,
-      "avg_ko_rt": 0.0247,
-      "fan_in": 0.0224,
-      "avg_ok_rt": 0.0205,
-      "req_rate": 0.0201,
-      "is_gateway": 0.019,
-      "req_ok": 0.0181,
-      "avg_rt": 0.0157,
-      "out_degree_centrality": 0.01,
-      "closeness_centrality": 0.0097,
-      "degree_centrality": 0.009,
-      "in_degree_centrality": 0.0081,
-      "avg_affected_services": 0.0071,
-      "reachable_services": 0.0053,
-      "fault_impact_score": 0.0048,
-      "fan_out": 0.0047,
-      "betweenness_centrality": 0.0039,
-      "dependency_depth": 0.0036,
-      "fault_injection_count": 0.0024,
-      "is_config_service": 0.0007
+      "kaggle_anomaly_rate": 0.2634,
+      "anomaly_rate": 0.2315,
+      "error_rate": 0.1802,
+      "req_ko": 0.0872,
+      "avg_rt": 0.0316,
+      "avg_ko_rt": 0.0226,
+      "avg_ok_rt": 0.022,
+      "req_rate": 0.0216,
+      "req_ok": 0.0183,
+      "fan_in": 0.0175,
+      "perc95_rt": 0.0166,
+      "is_gateway": 0.015,
+      "closeness_centrality": 0.0118,
+      "out_degree_centrality": 0.0114,
+      "degree_centrality": 0.011,
+      "in_degree_centrality": 0.0092,
+      "avg_affected_services": 0.0085,
+      "fault_impact_score": 0.0078,
+      "betweenness_centrality": 0.0041,
+      "reachable_services": 0.0031,
+      "dependency_depth": 0.0028,
+      "fault_injection_count": 0.0015,
+      "fan_out": 0.0014,
+      "is_config_service": 0.0
     }
   },
   "baseline_model": {
+    "n_features": 16,
     "features": [
       "fan_in",
       "fan_out",
@@ -157,20 +186,19 @@
       "avg_affected_services",
       "fault_impact_score"
     ],
-    "n_features": 16,
-    "accuracy": 0.9959,
-    "high_f1": 1.0,
-    "macro_f1": 0.9937,
-    "per_class": {
+    "holdout_accuracy": 1.0,
+    "holdout_high_f1": 1.0,
+    "holdout_macro_f1": 1.0,
+    "per_class_holdout": {
       "Low": {
         "precision": 1.0,
-        "recall": 0.9951,
-        "f1-score": 0.9976
+        "recall": 1.0,
+        "f1-score": 1.0
       },
       "Medium": {
-        "precision": 0.9677,
+        "precision": 1.0,
         "recall": 1.0,
-        "f1-score": 0.9836
+        "f1-score": 1.0
       },
       "High": {
         "precision": 1.0,
@@ -178,38 +206,48 @@
         "f1-score": 1.0
       }
     },
-    "confusion_matrix": [
+    "confusion_matrix_holdout": [
       [
-        204,
-        1,
+        41,
+        0,
         0
       ],
       [
         0,
-        30,
+        6,
         0
       ],
       [
         0,
         0,
-        10
+        2
       ]
     ],
-    "lopo_accuracy_mean": 0.9786,
-    "lopo_accuracy_std": 0.0394,
-    "lopo_high_f1_mean": 0.4184,
-    "lopo_macro_f1_mean": 0.9311
+    "cv_accuracy_mean": 0.9882,
+    "cv_accuracy_std": 0.0157,
+    "cv_accuracy_folds": [
+      0.9608,
+      0.9804,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "cv_macro_f1_mean": 0.9754,
+    "cv_macro_f1_std": 0.0304,
+    "cv_macro_f1_folds": [
+      0.944,
+      0.9328,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "cv_high_f1": 0.9714
   },
-  "research_claim": {
+  "verdict": {
+    "unified_wins_macro_f1": false,
+    "holdout_macro_f1_delta": 0.0,
     "holdout_high_f1_delta": 0.0,
-    "holdout_macro_f1_delta": 0.0063,
-    "lopo_high_f1_delta": 0.015,
-    "lopo_macro_f1_delta": 0.0468,
-    "unified_wins": true,
-    "top3_features_are_telemetry": [
-      "kaggle_anomaly_rate",
-      "anomaly_rate",
-      "error_rate"
-    ]
+    "cv_macro_f1_delta": 0.0112,
+    "model_saved": false
   }
 }
