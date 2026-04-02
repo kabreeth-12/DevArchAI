@@ -58,6 +58,7 @@ class AnalyseRequest(BaseModel):
     prometheus_url: Optional[str] = None
     otel_endpoint: Optional[str] = None
     debug_telemetry: bool = False
+    graphml_path: Optional[str] = None  # Pre-built GraphML topology; skips Java scanning
 
 
 class CicdIngestRequest(BaseModel):
@@ -196,17 +197,28 @@ def analyse_project(request: AnalyseRequest):
 
     project_root = Path(request.project_path)
 
-    # PERFORMANCE GUARD:
-    # Analyse all detected services (can be limited later if needed)
-    for service in services:
-        service_path = project_root / service
+    if request.graphml_path:
+        # Load pre-built topology from GraphML; skip Java scanning.
+        import networkx as nx
+        gml_graph = nx.read_graphml(request.graphml_path)
+        for node in gml_graph.nodes():
+            if node not in services:
+                services.append(node)
+                graph.add_services([node])
+        for src, dst in gml_graph.edges():
+            graph.add_dependency(src, dst)
+    else:
+        # PERFORMANCE GUARD:
+        # Analyse all detected services (can be limited later if needed)
+        for service in services:
+            service_path = project_root / service
 
-        # Java scanning itself is already limited internally
-        dependencies = scan_java_dependencies(service_path)
+            # Java scanning itself is already limited internally
+            dependencies = scan_java_dependencies(service_path)
 
-        for dep in dependencies:
-            if dep in services:
-                graph.add_dependency(service, dep)
+            for dep in dependencies:
+                if dep in services:
+                    graph.add_dependency(service, dep)
 
     # Step 3: Fetch telemetry (metrics + traces), if configured
     telemetry_features = {}
@@ -239,11 +251,6 @@ def analyse_project(request: AnalyseRequest):
             prefixed = f"spring-petclinic-{key}"
             if prefixed in service_set:
                 normalized[prefixed] = value
-                continue
-            # A single train-ticket job metric found: apply to all microservices as fallback.
-            if key == "train-ticket":
-                for svc in services:
-                    normalized.setdefault(svc, {}).update(value)
                 continue
             normalized[key] = value
 
