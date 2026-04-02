@@ -1,0 +1,38 @@
+2024-03-15 08:00:05.001  INFO 1 --- [           main] c.f.o.FtgoOrderServiceApplication        : Starting FtgoOrderServiceApplication v0.0.1-SNAPSHOT on order-service with PID 1
+2024-03-15 08:00:05.010  INFO 1 --- [           main] c.f.o.FtgoOrderServiceApplication        : The following profiles are active: default
+2024-03-15 08:00:06.123  INFO 1 --- [           main] o.s.d.j.LocalContainerEntityManagerFactoryBean : Building JPA container EntityManagerFactory for persistence unit 'default'
+2024-03-15 08:00:06.456  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2024-03-15 08:00:11.789 ERROR 1 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Exception during pool initialization.
+com.mysql.jdbc.exceptions.jdbc4.CommunicationsException: Communications link failure
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at com.mysql.jdbc.ConnectionImpl.createNewIO(ConnectionImpl.java:2181)
+	at com.mysql.jdbc.ConnectionImpl.<init>(ConnectionImpl.java:787)
+	Caused by: java.net.ConnectException: Connection refused (Connection refused)
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:351)
+	at ftgo-mysql:3306
+2024-03-15 08:00:11.800 ERROR 1 --- [           main] o.s.b.SpringApplication                  : Application run failed
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory'
+	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.buildNativeEntityManagerFactory(LocalContainerEntityManagerFactoryBean.java:403)
+	Caused by: javax.persistence.PersistenceException: Unable to connect to database: ftgo-mysql:3306
+2024-03-15 08:01:35.001  INFO 1 --- [           main] c.f.o.FtgoOrderServiceApplication        : Starting FtgoOrderServiceApplication (retry after MySQL ready)
+2024-03-15 08:01:36.234  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2024-03-15 08:01:36.890  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2024-03-15 08:01:37.123  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http)
+2024-03-15 08:01:37.456  INFO 1 --- [           main] c.f.o.FtgoOrderServiceApplication        : Started FtgoOrderServiceApplication in 2.34 seconds
+2024-03-15 08:01:38.001  INFO 1 --- [kafka-listener] c.f.o.sagas.CreateOrderSaga              : Starting CreateOrderSaga for consumer 42
+2024-03-15 08:01:38.045 ERROR 1 --- [kafka-listener] i.e.tram.consumer.kafka.EventuateKafkaMessageConsumer: Kafka broker unreachable: kafka:9092
+2024-03-15 08:01:38.046  WARN 1 --- [kafka-listener] c.f.o.sagas.CreateOrderSaga              : Saga participant ftgo-consumer-service not responding - saga rollback initiated
+2024-03-15 08:01:38.100 ERROR 1 --- [kafka-listener] c.f.o.domain.OrderDomainEventPublisher   : Failed to publish OrderCreated event - Kafka unavailable
+org.apache.kafka.common.errors.TimeoutException: Topic ftgo.order-service-0 not present in metadata after 10000 ms
+	at org.apache.kafka.clients.producer.KafkaProducer.waitOnMetadata(KafkaProducer.java:1012)
+2024-03-15 08:01:45.002  INFO 1 --- [  XNIO-1 task-1] c.f.o.web.OrderController                : POST /orders - createOrder for consumer=42 restaurant=7
+2024-03-15 08:01:45.023 ERROR 1 --- [  XNIO-1 task-1] c.f.o.domain.service.OrderService        : Failed to create order: saga participant timeout - consumer-service did not respond within 30s
+2024-03-15 08:01:45.024 ERROR 1 --- [  XNIO-1 task-1] c.f.o.web.OrderController                : CreateOrder saga failed - compensating transaction initiated
+2024-03-15 08:01:50.345  INFO 1 --- [  XNIO-1 task-2] c.f.o.web.OrderController                : GET /orders/123
+2024-03-15 08:01:50.367  INFO 1 --- [  XNIO-1 task-2] c.f.o.web.OrderController                : Order 123 status: APPROVAL_PENDING
+2024-03-15 08:02:00.001 ERROR 1 --- [ scheduling-1]   c.f.o.domain.OrderAggregateRepository   : Optimistic locking failure on order 123 - concurrent update detected
+2024-03-15 08:02:00.050 ERROR 1 --- [ scheduling-1]   c.f.o.sagas.ApproveOrderSaga             : Restaurant 7 approval timed out after 60s - saga compensation triggered
+2024-03-15 08:02:05.123 ERROR 1 --- [kafka-listener] c.f.o.messaging.OrderEventConsumer       : Failed to process KitchenTicketCreated event - duplicate message detected
+java.lang.IllegalStateException: Order 456 already in state APPROVED - cannot transition to APPROVED
+	at com.ftgo.orderservice.domain.Order.approve(Order.java:112)

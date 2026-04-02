@@ -1,0 +1,21 @@
+images: "./images/"
+Abs(images): "/images" (<nil>)
+Getwd: "/" (<nil>)
+ls: ["images/WAT.jpg" "images/WAT2.jpg" "images/bit_of_leg_1.jpeg" "images/bit_of_leg_2.jpeg" "images/catsocks.jpg" "images/catsocks2.jpg" "images/classic.jpg" "images/classic2.jpg" "images/colourful_socks.jpg" "images/cross_1.jpeg" "images/cross_2.jpeg" "images/holy_1.jpeg" "images/holy_2.jpeg" "images/holy_3.jpeg" "images/puma_1.jpeg" "images/puma_2.jpeg" "images/rugby_socks.jpg" "images/sock.jpeg" "images/youtube_1.jpeg" "images/youtube_2.jpeg"]
+ts=2026-04-01T20:57:50Z caller=main.go:108 Error="Unable to connect to Database" DSN=catalogue_user:default_password@tcp(catalogue-db:3306)/socksdb
+ts=2026-04-01T20:57:50Z caller=main.go:136 transport=HTTP port=80
+ts=2026-04-01T21:12:59Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=14.846581ms
+ts=2026-04-01T21:12:59Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=136.344634ms
+ts=2026-04-01T21:12:59Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=277.422302ms
+ts=2026-04-01T21:12:59Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=1.205893ms
+ts=2026-04-01T21:12:59Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=10.116184ms
+ts=2026-04-01T21:13:00Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=2.167687ms
+ts=2026-04-01T21:13:00Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=1.015633ms
+ts=2026-04-01T21:13:00Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=980.453µs
+ts=2026-04-01T21:13:01Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=1.059643ms
+ts=2026-04-01T21:13:01Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=988.349µs
+ts=2026-04-01T21:13:01Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=736.75µs
+ts=2026-04-01T21:13:01Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=907.882µs
+ts=2026-04-01T21:13:01Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=1.216521ms
+ts=2026-04-01T21:13:01Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=1.005269ms
+ts=2026-04-01T21:13:01Z caller=logging.go:36 method=List tags= order=id pageNum=1 pageSize=10 result=9 err=null took=1.18489ms

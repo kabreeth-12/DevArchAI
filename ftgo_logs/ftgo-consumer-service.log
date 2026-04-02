@@ -1,0 +1,15 @@
+2024-03-15 08:00:06.001  INFO 1 --- [           main] c.f.c.FtgoConsumerServiceApplication     : Starting FtgoConsumerServiceApplication v0.0.1-SNAPSHOT
+2024-03-15 08:00:08.456  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2024-03-15 08:00:09.789  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http)
+2024-03-15 08:00:09.801  INFO 1 --- [           main] c.f.c.FtgoConsumerServiceApplication     : Started FtgoConsumerServiceApplication in 3.81 seconds
+2024-03-15 08:00:15.001  INFO 1 --- [kafka-listener] c.f.c.messaging.ConsumerCommandHandler   : Processing ValidateOrderByConsumer command for consumer=42 order=789
+2024-03-15 08:00:15.023 ERROR 1 --- [kafka-listener] i.e.tram.consumer.kafka.EventuateKafkaMessageConsumer: Kafka broker unavailable: kafka:9092 - retrying in 5s
+2024-03-15 08:00:20.034 ERROR 1 --- [kafka-listener] i.e.tram.consumer.kafka.EventuateKafkaMessageConsumer: Kafka broker still unavailable after 3 retries
+org.apache.kafka.common.KafkaException: Failed to construct kafka consumer
+	at org.apache.kafka.clients.consumer.KafkaConsumer.<init>(KafkaConsumer.java:818)
+	Caused by: org.apache.kafka.common.config.ConfigException: No resolvable bootstrap urls given in bootstrap.servers
+2024-03-15 08:00:25.123 ERROR 1 --- [kafka-listener] c.f.c.domain.ConsumerService             : Consumer validation failed - saga reply not sent: Kafka unavailable
+2024-03-15 08:00:30.456  WARN 1 --- [ scheduling-1]   c.f.c.health.KafkaHealthIndicator        : Kafka connection UNHEALTHY - consumer group devarchai-consumer-service unable to join
+2024-03-15 08:00:35.001  INFO 1 --- [  XNIO-1 task-1] c.f.c.web.ConsumerController             : GET /consumers/42
+2024-03-15 08:00:35.034  INFO 1 --- [  XNIO-1 task-1] c.f.c.web.ConsumerController             : Consumer 42 found - valid credit card
+2024-03-15 08:00:40.567 ERROR 1 --- [kafka-listener] c.f.c.messaging.ConsumerCommandHandler   : Timeout waiting for ValidateOrderByConsumer reply from saga - order=789 consumer=42

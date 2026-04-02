@@ -1,0 +1,621 @@
+﻿{
+    "project_path":  "d:\\IIT Syllabus\\4th Year\\Final Year Project\\IPD\\Prep\\IPD - Prototype - Implementation\\DevArchAI\\external-projects\\train-ticket",
+    "detected_services":  [
+                              "ts-admin-basic-info-service",
+                              "ts-admin-order-service",
+                              "ts-admin-route-service",
+                              "ts-admin-travel-service",
+                              "ts-admin-user-service",
+                              "ts-assurance-service",
+                              "ts-auth-service",
+                              "ts-basic-service",
+                              "ts-cancel-service",
+                              "ts-common",
+                              "ts-config-service",
+                              "ts-consign-price-service",
+                              "ts-consign-service",
+                              "ts-contacts-service",
+                              "ts-execute-service",
+                              "ts-food-map-service",
+                              "ts-food-service",
+                              "ts-inside-payment-service",
+                              "ts-news-service",
+                              "ts-notification-service",
+                              "ts-order-other-service",
+                              "ts-order-service",
+                              "ts-payment-service",
+                              "ts-preserve-other-service",
+                              "ts-preserve-service",
+                              "ts-price-service",
+                              "ts-rebook-service",
+                              "ts-route-plan-service",
+                              "ts-route-service",
+                              "ts-seat-service",
+                              "ts-security-service",
+                              "ts-station-service",
+                              "ts-ticket-office-service",
+                              "ts-ticketinfo-service",
+                              "ts-train-service",
+                              "ts-travel-plan-service",
+                              "ts-travel-service",
+                              "ts-travel2-service",
+                              "ts-ui-dashboard",
+                              "ts-ui-test",
+                              "ts-user-service",
+                              "ts-verification-code-service",
+                              "ts-voucher-service"
+                          ],
+    "suspected_root_cause":  "ts-admin-basic-info-service",
+    "explanation":  "Architectural risk predicted using the DevArchAI Unified Model that combines dependency structure, telemetry signals, and fault impact indicators within a single reasoning pipeline.",
+    "rca_summary":  "The following is a complete and detailed log of the web application\u0027s development cycle, including each stage from building the initial codebase to deploying the final product, along with its various updates, errors, and corrections. The log covers stages such as building a Java-based web application, implementing user authentication and authorization, handling HTTP requests, implementing RESTful APIs, implementing caching and session management, optimizing performance, and monitoring the application\u0027s health status through metrics. The log also includes various errors such as database failures, JDBC exceptions, file upload errors, HTTP errors, and timeout errors. Additionally, the log provides insights into the development process, including the team\u0027s communication style, workflow patterns, and decision-making processes. Overall, the log provides a comprehensive view of the application\u0027s development, from its initial stages to its final production stage.",
+    "rca_confidence":  0.7,
+    "rca_references":  [
+                           "d:\\IIT Syllabus\\4th Year\\Final Year Project\\IPD\\Prep\\IPD - Prototype - Implementation\\DevArchAI\\train_ticket_logs\\train-ticket-ts-admin-basic-info-service-1.log",
+                           "d:\\IIT Syllabus\\4th Year\\Final Year Project\\IPD\\Prep\\IPD - Prototype - Implementation\\DevArchAI\\train_ticket_logs\\train-ticket-ts-admin-basic-info-service-1.log",
+                           "d:\\IIT Syllabus\\4th Year\\Final Year Project\\IPD\\Prep\\IPD - Prototype - Implementation\\DevArchAI\\train_ticket_logs\\train-ticket-ts-basic-service-1.log",
+                           "d:\\IIT Syllabus\\4th Year\\Final Year Project\\IPD\\Prep\\IPD - Prototype - Implementation\\DevArchAI\\train_ticket_logs\\train-ticket-ts-order-other-service-1.log",
+                           "d:\\IIT Syllabus\\4th Year\\Final Year Project\\IPD\\Prep\\IPD - Prototype - Implementation\\DevArchAI\\train_ticket_logs\\train-ticket-ts-price-service-1.log"
+                       ],
+    "rca_llm_used":  true,
+    "risk_analysis":  [
+                          {
+                              "service":  "ts-admin-basic-info-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-admin-order-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-admin-route-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-admin-travel-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-admin-user-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to deep dependency chains increase fault propagation risk",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-assurance-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-auth-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-basic-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-cancel-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to deep dependency chains increase fault propagation risk",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-common",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-config-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-consign-price-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-consign-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-contacts-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-execute-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-food-map-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-food-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-inside-payment-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-news-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-notification-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-order-other-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to high fan-in suggests tight coupling with multiple dependent services",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-order-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to high fan-in suggests tight coupling with multiple dependent services",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-payment-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-preserve-other-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-preserve-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-price-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-rebook-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-route-plan-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-route-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-seat-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-security-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-station-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to high fan-in suggests tight coupling with multiple dependent services",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-ticket-office-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-ticketinfo-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-train-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-travel-plan-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to deep dependency chains increase fault propagation risk",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-travel-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to high fan-in suggests tight coupling with multiple dependent services",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-travel2-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to high fan-in suggests tight coupling with multiple dependent services",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-ui-dashboard",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-ui-test",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-user-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-verification-code-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          },
+                          {
+                              "service":  "ts-voucher-service",
+                              "predicted_risk_level":  0,
+                              "risk_confidence":  1.0,
+                              "reason":  "Low risk due to low structural complexity and absence of anomaly or fault signals",
+                              "model":  "DevArchAI Unified Model"
+                          }
+                      ],
+    "improvements":  [
+                         "The system contains multiple microservices. Ensure service boundaries are well-defined to avoid tight coupling."
+                     ],
+    "dependency_graph":  {
+                             "nodes":  [
+                                           "ts-admin-basic-info-service",
+                                           "ts-admin-order-service",
+                                           "ts-admin-route-service",
+                                           "ts-admin-travel-service",
+                                           "ts-admin-user-service",
+                                           "ts-assurance-service",
+                                           "ts-auth-service",
+                                           "ts-basic-service",
+                                           "ts-cancel-service",
+                                           "ts-common",
+                                           "ts-config-service",
+                                           "ts-consign-price-service",
+                                           "ts-consign-service",
+                                           "ts-contacts-service",
+                                           "ts-execute-service",
+                                           "ts-food-map-service",
+                                           "ts-food-service",
+                                           "ts-inside-payment-service",
+                                           "ts-news-service",
+                                           "ts-notification-service",
+                                           "ts-order-other-service",
+                                           "ts-order-service",
+                                           "ts-payment-service",
+                                           "ts-preserve-other-service",
+                                           "ts-preserve-service",
+                                           "ts-price-service",
+                                           "ts-rebook-service",
+                                           "ts-route-plan-service",
+                                           "ts-route-service",
+                                           "ts-seat-service",
+                                           "ts-security-service",
+                                           "ts-station-service",
+                                           "ts-ticket-office-service",
+                                           "ts-ticketinfo-service",
+                                           "ts-train-service",
+                                           "ts-travel-plan-service",
+                                           "ts-travel-service",
+                                           "ts-travel2-service",
+                                           "ts-ui-dashboard",
+                                           "ts-ui-test",
+                                           "ts-user-service",
+                                           "ts-verification-code-service",
+                                           "ts-voucher-service"
+                                       ],
+                             "edges":  [
+                                           {
+                                               "from_service":  "ts-admin-basic-info-service",
+                                               "to_service":  "ts-price-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-admin-basic-info-service",
+                                               "to_service":  "ts-train-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-admin-basic-info-service",
+                                               "to_service":  "ts-station-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-admin-basic-info-service",
+                                               "to_service":  "ts-config-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-admin-basic-info-service",
+                                               "to_service":  "ts-contacts-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-admin-order-service",
+                                               "to_service":  "ts-order-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-admin-order-service",
+                                               "to_service":  "ts-order-other-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-admin-route-service",
+                                               "to_service":  "ts-route-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-admin-travel-service",
+                                               "to_service":  "ts-travel2-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-admin-travel-service",
+                                               "to_service":  "ts-travel-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-admin-user-service",
+                                               "to_service":  "ts-user-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-auth-service",
+                                               "to_service":  "ts-verification-code-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-basic-service",
+                                               "to_service":  "ts-train-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-basic-service",
+                                               "to_service":  "ts-station-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-basic-service",
+                                               "to_service":  "ts-route-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-basic-service",
+                                               "to_service":  "ts-price-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-cancel-service",
+                                               "to_service":  "ts-order-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-cancel-service",
+                                               "to_service":  "ts-order-other-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-cancel-service",
+                                               "to_service":  "ts-user-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-cancel-service",
+                                               "to_service":  "ts-notification-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-cancel-service",
+                                               "to_service":  "ts-inside-payment-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-consign-service",
+                                               "to_service":  "ts-consign-price-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-execute-service",
+                                               "to_service":  "ts-order-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-execute-service",
+                                               "to_service":  "ts-order-other-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-food-service",
+                                               "to_service":  "ts-travel-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-food-service",
+                                               "to_service":  "ts-station-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-food-service",
+                                               "to_service":  "ts-food-map-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-order-other-service",
+                                               "to_service":  "ts-station-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-order-service",
+                                               "to_service":  "ts-station-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-route-plan-service",
+                                               "to_service":  "ts-travel2-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-route-plan-service",
+                                               "to_service":  "ts-travel-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-route-plan-service",
+                                               "to_service":  "ts-route-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-route-plan-service",
+                                               "to_service":  "ts-station-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-seat-service",
+                                               "to_service":  "ts-travel2-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-seat-service",
+                                               "to_service":  "ts-order-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-seat-service",
+                                               "to_service":  "ts-order-other-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-seat-service",
+                                               "to_service":  "ts-travel-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-seat-service",
+                                               "to_service":  "ts-config-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-security-service",
+                                               "to_service":  "ts-order-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-security-service",
+                                               "to_service":  "ts-order-other-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-ticketinfo-service",
+                                               "to_service":  "ts-basic-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-travel-plan-service",
+                                               "to_service":  "ts-travel2-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-travel-plan-service",
+                                               "to_service":  "ts-seat-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-travel-plan-service",
+                                               "to_service":  "ts-ticketinfo-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-travel-plan-service",
+                                               "to_service":  "ts-travel-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-travel-plan-service",
+                                               "to_service":  "ts-route-plan-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-travel-plan-service",
+                                               "to_service":  "ts-station-service"
+                                           },
+                                           {
+                                               "from_service":  "ts-user-service",
+                                               "to_service":  "ts-auth-service"
+                                           }
+                                       ]
+                         },
+    "telemetry_debug":  {
+                            "jaeger-query":  {
+                                                 "req_rate":  2.0,
+                                                 "error_rate":  0.0,
+                                                 "avg_rt":  1.2175,
+                                                 "perc95_rt":  2.356,
+                                                 "req_ko":  0.0,
+                                                 "anomaly_rate":  0.0,
+                                                 "span_count":  2.0,
+                                                 "trace_error_rate":  0.0,
+                                                 "avg_trace_ms":  1.2175,
+                                                 "p95_trace_ms":  2.356
+                                             }
+                        }
+}

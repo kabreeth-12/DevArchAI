@@ -1,0 +1,31 @@
+ts=2026-04-01T20:57:55Z caller=main.go:145 transport=HTTP port=80
+ts=2026-04-01T21:12:59Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=315.625µs
+ts=2026-04-01T21:12:59Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=26.611µs
+ts=2026-04-01T21:12:59Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:12:59Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:12:59Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=28.098µs
+ts=2026-04-01T21:12:59Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:12:59Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=39.27µs
+ts=2026-04-01T21:12:59Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:00Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=28.592µs
+ts=2026-04-01T21:13:00Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:00Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=28.599µs
+ts=2026-04-01T21:13:00Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:00Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=27.095µs
+ts=2026-04-01T21:13:00Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:01Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=36.572µs
+ts=2026-04-01T21:13:01Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:01Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=25.017µs
+ts=2026-04-01T21:13:01Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:01Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=24.934µs
+ts=2026-04-01T21:13:01Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:01Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=27.839µs
+ts=2026-04-01T21:13:01Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:01Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=19.112µs
+ts=2026-04-01T21:13:01Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:01Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=27.069µs
+ts=2026-04-01T21:13:01Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:01Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=18.246µs
+ts=2026-04-01T21:13:01Z caller=server.go:94 err="Invalid Id Hex"
+ts=2026-04-01T21:13:01Z caller=middlewares.go:75 method=GetUsers id=1 result=1 took=72.347µs
+ts=2026-04-01T21:13:01Z caller=server.go:94 err="Invalid Id Hex"

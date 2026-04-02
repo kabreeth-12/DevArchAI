@@ -1,0 +1,35 @@
+2024-03-15 08:00:01.234  INFO 1 --- [           main] c.f.a.FtgoApiGatewayApplication         : Starting FtgoApiGatewayApplication v0.0.1-SNAPSHOT on api-gateway with PID 1
+2024-03-15 08:00:01.238  INFO 1 --- [           main] c.f.a.FtgoApiGatewayApplication         : No active profile set, falling back to default profiles: default
+2024-03-15 08:00:02.456  INFO 1 --- [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=6f5f6b84-1234-5678-abcd-9f2a3c4d5e6f
+2024-03-15 08:00:03.789  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2024-03-15 08:00:03.801  INFO 1 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2024-03-15 08:00:03.802  INFO 1 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.33]
+2024-03-15 08:00:04.123  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http)
+2024-03-15 08:00:04.201  INFO 1 --- [           main] c.f.a.FtgoApiGatewayApplication         : Started FtgoApiGatewayApplication in 3.12 seconds (JVM running for 4.21)
+2024-03-15 08:00:10.002  INFO 1 --- [  XNIO-1 task-1] c.f.a.orders.web.OrderController         : POST /api/orders - creating order for consumer 1
+2024-03-15 08:00:10.045 ERROR 1 --- [  XNIO-1 task-1] c.f.a.proxy.OrderServiceProxy            : Connection refused: ftgo-order-service/10.0.0.5:8080
+2024-03-15 08:00:10.046 ERROR 1 --- [  XNIO-1 task-1] c.f.a.orders.web.OrderController         : Failed to create order - order service unavailable
+2024-03-15 08:00:10.100  WARN 1 --- [  XNIO-1 task-1] o.s.web.servlet.DispatcherServlet        : Resolved [com.ftgo.apigateway.exception.ServiceUnavailableException: ftgo-order-service not responding]
+2024-03-15 08:00:15.234  INFO 1 --- [  XNIO-1 task-2] c.f.a.consumers.web.ConsumerController   : GET /api/consumers/1
+2024-03-15 08:00:15.267 ERROR 1 --- [  XNIO-1 task-2] c.f.a.proxy.ConsumerServiceProxy         : Connection timed out after 5000ms: ftgo-consumer-service/10.0.0.6:8080
+2024-03-15 08:00:15.268 ERROR 1 --- [  XNIO-1 task-2] c.f.a.consumers.web.ConsumerController   : Failed to retrieve consumer - consumer service timeout
+2024-03-15 08:00:20.001  INFO 1 --- [  XNIO-1 task-3] c.f.a.restaurants.web.RestaurantController: GET /api/restaurants
+2024-03-15 08:00:20.034 ERROR 1 --- [  XNIO-1 task-3] c.f.a.proxy.RestaurantServiceProxy       : Connection refused: ftgo-restaurant-service/10.0.0.7:8080
+2024-03-15 08:00:25.567  INFO 1 --- [  XNIO-1 task-4] c.f.a.orders.web.OrderController         : GET /api/orders/1/status
+2024-03-15 08:00:25.601 ERROR 1 --- [  XNIO-1 task-4] c.f.a.proxy.OrderServiceProxy            : Connection refused: ftgo-order-service/10.0.0.5:8080
+2024-03-15 08:00:30.789 ERROR 1 --- [ scheduling-1]   c.f.a.health.BackendHealthChecker        : ftgo-order-service UNHEALTHY - last check: connection refused after 3 retries
+2024-03-15 08:00:30.790 ERROR 1 --- [ scheduling-1]   c.f.a.health.BackendHealthChecker        : ftgo-consumer-service UNHEALTHY - last check: timeout after 5000ms
+2024-03-15 08:00:30.791 ERROR 1 --- [ scheduling-1]   c.f.a.health.BackendHealthChecker        : ftgo-restaurant-service UNHEALTHY - connection refused
+2024-03-15 08:00:30.792 ERROR 1 --- [ scheduling-1]   c.f.a.health.BackendHealthChecker        : ftgo-kitchen-service UNHEALTHY - connection refused
+2024-03-15 08:00:30.793 ERROR 1 --- [ scheduling-1]   c.f.a.health.BackendHealthChecker        : ftgo-accounting-service UNHEALTHY - connection refused
+2024-03-15 08:00:35.123  WARN 1 --- [  XNIO-1 task-5] o.s.w.r.f.client.ExchangeFunctions       : [5bbfb63e] Response 503 for GET http://ftgo-order-service/api/orders
+2024-03-15 08:00:35.124 ERROR 1 --- [  XNIO-1 task-5] c.f.apigateway.FtgoApiGatewayApplication : Unhandled exception in request pipeline
+java.net.ConnectException: Connection refused: ftgo-order-service/10.0.0.5:8080
+	at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)
+	at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:717)
+	at com.ftgo.apigateway.proxy.OrderServiceProxy.createOrder(OrderServiceProxy.java:87)
+	at com.ftgo.apigateway.orders.web.OrderController.createOrder(OrderController.java:54)
+2024-03-15 08:00:40.002  INFO 1 --- [  XNIO-1 task-6] c.f.a.orders.web.OrderController         : POST /api/orders - retry attempt 1 of 3
+2024-03-15 08:00:40.055 ERROR 1 --- [  XNIO-1 task-6] c.f.a.proxy.OrderServiceProxy            : Retry 1 failed: Connection refused: ftgo-order-service/10.0.0.5:8080
+2024-03-15 08:00:40.056 ERROR 1 --- [  XNIO-1 task-6] c.f.a.proxy.OrderServiceProxy            : Retry 2 failed: Connection refused: ftgo-order-service/10.0.0.5:8080
+2024-03-15 08:00:40.057 ERROR 1 --- [  XNIO-1 task-6] c.f.a.proxy.OrderServiceProxy            : Max retries exceeded - order service permanently unavailable

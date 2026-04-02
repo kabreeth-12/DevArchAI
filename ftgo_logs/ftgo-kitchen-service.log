@@ -1,0 +1,14 @@
+2024-03-15 08:00:07.001  INFO 1 --- [           main] c.f.k.FtgoKitchenServiceApplication      : Starting FtgoKitchenServiceApplication v0.0.1-SNAPSHOT
+2024-03-15 08:00:09.234  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2024-03-15 08:00:10.456  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http)
+2024-03-15 08:00:10.478  INFO 1 --- [           main] c.f.k.FtgoKitchenServiceApplication      : Started FtgoKitchenServiceApplication in 3.47 seconds
+2024-03-15 08:00:12.001 ERROR 1 --- [kafka-listener] i.e.tram.consumer.kafka.EventuateKafkaMessageConsumer: Unable to subscribe to topic ftgo.kitchen-service-0: broker unavailable
+org.apache.kafka.common.errors.TimeoutException: Timeout expired while fetching topic metadata
+2024-03-15 08:00:20.234  INFO 1 --- [  XNIO-1 task-1] c.f.k.web.KitchenController              : POST /tickets - creating ticket for order=789 restaurant=7
+2024-03-15 08:00:20.256 ERROR 1 --- [  XNIO-1 task-1] c.f.k.domain.KitchenTicketService        : Failed to publish TicketCreated event - Kafka broker kafka:9092 unreachable
+2024-03-15 08:00:25.001 ERROR 1 --- [kafka-listener] c.f.k.messaging.KitchenCommandHandler    : Processing CreateTicket failed - unable to persist saga reply
+java.lang.RuntimeException: Failed to send reply message to saga orchestrator
+	at io.eventuate.tram.sagas.participant.SagaCommandHandlersBuilder.build(SagaCommandHandlersBuilder.java:45)
+	Caused by: org.apache.kafka.clients.producer.ProducerFencedException: Producer cannot send more messages
+2024-03-15 08:00:30.456 ERROR 1 --- [ scheduling-1]   c.f.k.health.KafkaHealthIndicator        : Kafka UNHEALTHY - KitchenService isolated from saga orchestration
+2024-03-15 08:00:35.001 ERROR 1 --- [  XNIO-1 task-2] c.f.k.web.KitchenController              : PATCH /tickets/123/accept - failed to publish TicketAccepted event
