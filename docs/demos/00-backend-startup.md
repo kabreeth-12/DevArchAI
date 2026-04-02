@@ -35,10 +35,10 @@ Reload config: `curl -X POST http://localhost:9090/-/reload`
 Reads Jaeger traces and exposes them as `devarchai_trace_*` Prometheus metrics:
 
 ```
-venv310\Scripts\python.exe core\telemetry\trace_metrics_exporter.py ^
-  --backend jaeger ^
-  --base-url http://127.0.0.1:16686 ^
-  --port 8001 ^
+venv310\Scripts\python.exe core\telemetry\trace_metrics_exporter.py `
+  --backend jaeger `
+  --base-url http://127.0.0.1:16686 `
+  --port 8001 `
   --limit 50
 ```
 

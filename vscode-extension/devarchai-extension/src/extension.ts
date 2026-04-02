@@ -40,12 +40,6 @@ export function activate(context: vscode.ExtensionContext) {
         ignoreFocusOut: true
       });
 
-      const graphmlPath = await vscode.window.showInputBox({
-        prompt: 'Optional GraphML topology file (leave empty to use Java scanner)',
-        placeHolder: 'e.g. D:\\DevArchAI\\data\\graphml\\SockShop.graphml',
-        ignoreFocusOut: true
-      });
-
       const debugTelemetry = await vscode.window.showQuickPick(
         [
           { label: 'Yes (show telemetry in UI)', value: true },
@@ -66,7 +60,6 @@ export function activate(context: vscode.ExtensionContext) {
             use_gnn: false,
             prometheus_url: prometheusUrl || null,
             otel_endpoint: otelEndpoint || null,
-            graphml_path: graphmlPath || null,
             debug_telemetry: debugTelemetry?.value ?? false
           })
         });

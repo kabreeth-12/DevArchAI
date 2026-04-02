@@ -50,14 +50,16 @@ STRUCTURAL_FEATURES = [
     "betweenness_centrality", "closeness_centrality",
     "dependency_depth", "reachable_services",
     "is_gateway", "is_config_service",
-    "anomaly_rate", "kaggle_anomaly_rate",
+]
+FAULT_FEATURES = [
     "fault_injection_count", "avg_affected_services", "fault_impact_score",
 ]
 TELEMETRY_FEATURES = [
     "avg_rt", "avg_ok_rt", "avg_ko_rt", "perc95_rt",
     "req_rate", "req_ok", "req_ko", "error_rate",
+    "anomaly_rate", "kaggle_anomaly_rate",
 ]
-ALL_FEATURES = STRUCTURAL_FEATURES + TELEMETRY_FEATURES
+ALL_FEATURES = STRUCTURAL_FEATURES + FAULT_FEATURES + TELEMETRY_FEATURES
 LABEL_COL    = "risk_label"
 LABEL_NAMES  = {0: "Low", 1: "Medium", 2: "High"}
 
@@ -282,28 +284,37 @@ print(f"  GraphML saved.")
 
 # ── Append new rows ───────────────────────────────────────────────────────────
 print("\n[APPEND] Adding new rows to structural_training_dataset.csv")
-all_new_rows = ob_rows + otel_rows + dsb_rows
+all_new_rows_raw = ob_rows + otel_rows + dsb_rows
+skipped_projects = sorted({row.get("project") for row in all_new_rows_raw if row.get("project") in existing_projects})
+all_new_rows = [row for row in all_new_rows_raw if row.get("project") not in existing_projects]
 
-# Align columns to existing dataset
-for row in all_new_rows:
-    for col in df_struct.columns:
-        row.setdefault(col, np.nan)
+if skipped_projects:
+    print(f"  Skipping already-present projects: {skipped_projects}")
 
-df_new = pd.DataFrame(all_new_rows)[df_struct.columns]
-df_struct_updated = pd.concat([df_struct, df_new], ignore_index=True)
-df_struct_updated.to_csv(STRUCT_CSV, index=False)
+if not all_new_rows:
+    print("  No new rows to append; dataset unchanged.")
+    df_struct_updated = df_struct
+else:
+    # Align columns to existing dataset
+    for row in all_new_rows:
+        for col in df_struct.columns:
+            row.setdefault(col, np.nan)
 
-print(f"\n  OnlineBoutique  : {len(ob_rows)} rows added")
-print(f"  OtelDemo        : {len(otel_rows)} rows added")
-print(f"  HotelReservation: {len(dsb_rows)} rows added")
-print(f"  Total new rows  : {len(all_new_rows)}")
-print(f"  Updated dataset : {len(df_struct_updated)} rows, "
-      f"{df_struct_updated['project'].nunique()} projects")
-print(f"\n  Updated label dist: {df_struct_updated[LABEL_COL].value_counts().sort_index().to_dict()}")
-print(f"\n  All projects ({df_struct_updated['project'].nunique()}):")
-for p, cnt in df_struct_updated['project'].value_counts().items():
-    tag = " <-- NEW" if p in {"OnlineBoutique", "OtelDemo", "HotelReservation"} else ""
-    print(f"    {p:<45} {cnt:>4} rows{tag}")
+    df_new = pd.DataFrame(all_new_rows)[df_struct.columns]
+    df_struct_updated = pd.concat([df_struct, df_new], ignore_index=True)
+    df_struct_updated.to_csv(STRUCT_CSV, index=False)
+
+    print(f"\n  OnlineBoutique  : {len(ob_rows)} rows added")
+    print(f"  OtelDemo        : {len(otel_rows)} rows added")
+    print(f"  HotelReservation: {len(dsb_rows)} rows added")
+    print(f"  Total new rows  : {len(all_new_rows)}")
+    print(f"  Updated dataset : {len(df_struct_updated)} rows, "
+          f"{df_struct_updated['project'].nunique()} projects")
+    print(f"\n  Updated label dist: {df_struct_updated[LABEL_COL].value_counts().sort_index().to_dict()}")
+    print(f"\n  All projects ({df_struct_updated['project'].nunique()}):")
+    for p, cnt in df_struct_updated['project'].value_counts().items():
+        tag = " <-- NEW" if p in {"OnlineBoutique", "OtelDemo", "HotelReservation"} else ""
+        print(f"    {p:<45} {cnt:>4} rows{tag}")
 
 # =============================================================================
 # PART 2  Rebuild unified structural+telemetry dataset
@@ -314,7 +325,6 @@ print("=" * 72)
 
 df = df_struct_updated.copy()
 n  = len(df)
-label = df[LABEL_COL].values
 
 def noise(size, pct):
     return 1.0 + rng.uniform(-pct, pct, size=size)
@@ -322,27 +332,69 @@ def noise(size, pct):
 fan_in_  = df["fan_in"].fillna(0).values
 fan_out_ = df["fan_out"].fillna(0).values
 depth_   = df["dependency_depth"].fillna(0).values
+between_ = df["betweenness_centrality"].fillna(0).values
+is_gw_   = df["is_gateway"].fillna(0).values
+reach_   = df["reachable_services"].fillna(0).values
+fault_impact_ = df["fault_impact_score"].fillna(0).values
 
-req_rate  = (10.0 + 5.0*fan_in_ + 3.0*fan_out_) * noise(n, 0.20)
+def safe_norm(arr):
+    denom = np.nanmax(arr)
+    return arr / denom if denom and denom > 0 else np.zeros_like(arr)
 
-er_low  = rng.uniform(0.01, 0.05, n)
-er_med  = rng.uniform(0.05, 0.15, n)
-er_high = rng.uniform(0.15, 0.35, n)
-error_rate = np.where(label==2, er_high, np.where(label==1, er_med, er_low)) * noise(n, 0.10)
-error_rate = np.clip(error_rate, 0.001, 0.99)
+fan_in_n  = safe_norm(fan_in_)
+fan_out_n = safe_norm(fan_out_)
+depth_n   = safe_norm(depth_)
+between_n = np.clip(between_, 0.0, 1.0)
+reach_n   = safe_norm(reach_)
+fault_n   = safe_norm(fault_impact_)
 
-avg_rt    = (50.0 + 20.0*depth_ + 15.0*fan_in_) * noise(n, 0.25)
-perc95_rt = avg_rt * 2.5 * noise(n, 0.15)
-avg_ok_rt = avg_rt * 0.85
-avg_ko_rt = avg_rt * 3.5
+# anomaly_rate: prefer existing values, else derive from structure (no label usage)
+base_anomaly = (
+    0.02
+    + 0.10 * fan_in_n
+    + 0.08 * fan_out_n
+    + 0.10 * depth_n
+    + 0.12 * between_n
+    + 0.06 * is_gw_
+)
+base_anomaly = np.clip(base_anomaly * noise(n, 0.10), 0.0, 0.6)
+
+if "anomaly_rate" in df.columns:
+    anomaly_rate = df["anomaly_rate"].astype(float).values
+    anomaly_rate = np.where(np.isnan(anomaly_rate), base_anomaly, anomaly_rate)
+else:
+    anomaly_rate = base_anomaly
+anomaly_rate = np.clip(anomaly_rate * noise(n, 0.05), 0.0, 0.8)
+
+if "kaggle_anomaly_rate" in df.columns:
+    kaggle_anomaly_rate = df["kaggle_anomaly_rate"].astype(float).values
+    kaggle_anomaly_rate = np.where(
+        np.isnan(kaggle_anomaly_rate),
+        anomaly_rate * noise(n, 0.05),
+        kaggle_anomaly_rate
+    )
+else:
+    kaggle_anomaly_rate = anomaly_rate * noise(n, 0.05)
+kaggle_anomaly_rate = np.clip(kaggle_anomaly_rate, 0.0, 1.0)
+
+req_rate  = (10.0 + 5.0*fan_in_ + 3.0*fan_out_ + 1.5*reach_n*10.0) * noise(n, 0.20)
+error_rate = (
+    0.02
+    + 0.90 * anomaly_rate
+    + 0.25 * fault_n
+    + 0.15 * between_n
+) * noise(n, 0.08)
+error_rate = np.clip(error_rate, 0.001, 0.95)
+
+avg_rt    = (
+    50.0 + 18.0*depth_ + 12.0*fan_in_ + 5.0*fan_out_
+    + 180.0*anomaly_rate + 60.0*fault_n
+) * noise(n, 0.20)
+perc95_rt = avg_rt * (2.0 + 1.5 * error_rate) * noise(n, 0.12)
+avg_ok_rt = avg_rt * (0.80 + 0.10 * (1.0 - error_rate))
+avg_ko_rt = avg_rt * (2.5 + 2.5 * error_rate)
 req_ok    = req_rate * (1.0 - error_rate)
 req_ko    = req_rate * error_rate
-
-an_low  = rng.uniform(0.02, 0.05, n)
-an_med  = rng.uniform(0.05, 0.15, n)
-an_high = rng.uniform(0.15, 0.40, n)
-anomaly_rate = np.where(label==2, an_high, np.where(label==1, an_med, an_low))
-kaggle_anomaly_rate = np.clip(anomaly_rate * noise(n, 0.05), 0.0, 1.0)
 
 df = df.copy()
 df["req_rate"]            = req_rate
@@ -356,16 +408,24 @@ df["req_ko"]              = req_ko
 df["anomaly_rate"]        = anomaly_rate
 df["kaggle_anomaly_rate"] = kaggle_anomaly_rate
 
-# Augment 4x with ±15% noise
+# Augment 4x with feature-aware noise
 BINARY_COLS  = {"is_gateway", "is_config_service"}
 feature_arr  = df[ALL_FEATURES].fillna(0.0).values.copy()
 label_arr    = df[LABEL_COL].values.copy()
 meta_arr     = df[["service", "project"]].values.copy()
 
+NOISE_BY_FEATURE = {col: 0.15 for col in ALL_FEATURES}
+for col in TELEMETRY_FEATURES:
+    NOISE_BY_FEATURE[col] = 0.09
+for col in ("anomaly_rate", "kaggle_anomaly_rate", "error_rate"):
+    NOISE_BY_FEATURE[col] = 0.05
+
 aug_feats, aug_labels, aug_meta = [feature_arr], [label_arr], [meta_arr]
 for _ in range(4):
-    noisy = feature_arr * noise(feature_arr.shape, 0.15)
+    noisy = feature_arr.copy()
     for i, col in enumerate(ALL_FEATURES):
+        pct = NOISE_BY_FEATURE.get(col, 0.15)
+        noisy[:, i] = feature_arr[:, i] * (1.0 + rng.uniform(-pct, pct, size=feature_arr.shape[0]))
         if col in BINARY_COLS:
             noisy[:, i] = np.round(np.clip(noisy[:, i], 0, 1))
         else:
@@ -490,7 +550,7 @@ def report(name, y_true, y_pred, feature_names=None, clf=None):
 rep_u, acc_u = report("Unified  (structural + telemetry, 24 features)",
                        y_te, y_pred_u,
                        feature_names=ALL_FEATURES, clf=clf_unified)
-rep_b, acc_b = report("Baseline (structural only, 16 features)",
+rep_b, acc_b = report("Baseline (structural only, 11 features)",
                        y_te, y_pred_b)
 
 # ── 3d. Leave-One-Project-Out cross-validation ────────────────────────────────

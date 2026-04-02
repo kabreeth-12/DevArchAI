@@ -8,7 +8,7 @@ from typing import Dict
 import joblib
 import pandas as pd
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit, train_test_split
 
 
 def ensure_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
@@ -55,7 +55,7 @@ def main() -> None:
 
     df = pd.read_csv(dataset_path)
 
-    unified_features = [
+    structural_features = [
         "fan_in",
         "fan_out",
         "degree_centrality",
@@ -67,42 +67,46 @@ def main() -> None:
         "reachable_services",
         "is_gateway",
         "is_config_service",
-        "anomaly_rate",
-        "error_rate",
-        "req_rate",
-        "req_ok",
-        "req_ko",
-        "perc95_rt",
-        "avg_rt",
-        "avg_ok_rt",
-        "avg_ko_rt",
-        "kaggle_anomaly_rate",
+    ]
+
+    fault_features = [
         "fault_injection_count",
         "avg_affected_services",
         "fault_impact_score",
     ]
 
-    baseline_features = [
-        "fan_in",
-        "fan_out",
-        "degree_centrality",
-        "in_degree_centrality",
-        "out_degree_centrality",
-        "betweenness_centrality",
-        "closeness_centrality",
-        "dependency_depth",
-        "reachable_services",
-        "is_gateway",
-        "is_config_service",
+    telemetry_features = [
+        "avg_rt",
+        "avg_ok_rt",
+        "avg_ko_rt",
+        "perc95_rt",
+        "req_rate",
+        "req_ok",
+        "req_ko",
+        "error_rate",
+        "anomaly_rate",
+        "kaggle_anomaly_rate",
     ]
+
+    unified_features = structural_features + fault_features + telemetry_features
+    baseline_features = structural_features
 
     df = ensure_columns(df, list(set(unified_features + baseline_features)))
     X = df[unified_features]
     y = df["risk_label"]
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.25, random_state=42, stratify=y
-    )
+    if "project" in df.columns:
+        groups = df["project"].values
+        splitter = GroupShuffleSplit(n_splits=1, test_size=0.25, random_state=42)
+        train_idx, test_idx = next(splitter.split(X, y, groups=groups))
+        X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+        y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+        split_note = "25% hold-out split grouped by project"
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.25, random_state=42, stratify=y
+        )
+        split_note = "25% stratified hold-out split"
 
     label_counts = df["risk_label"].value_counts().to_dict()
     results = {
@@ -111,6 +115,7 @@ def main() -> None:
         "labels": label_counts,
         "unified_model": str(unified_path),
         "baseline_model": str(baseline_path),
+        "split": split_note,
         "unified": evaluate_model(unified_path, X_test, y_test),
     }
 
@@ -133,6 +138,7 @@ def main() -> None:
         total = sum(label_counts.values())
         imbalance = {k: round(v / total, 4) for k, v in label_counts.items()}
         lines.append(f"Label share: {imbalance}")
+    lines.append(f"Split: {results['split']}")
     lines.append("")
     lines.append("## Unified Model")
     lines.append(f"Accuracy: {results['unified']['accuracy']:.4f}")
