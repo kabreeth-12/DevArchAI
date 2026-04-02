@@ -40,7 +40,23 @@ def fetch_prometheus_metrics(prom_url: str) -> Dict[str, Dict[str, float]]:
         for service, value in series.items():
             results.setdefault(service, {})[metric_name] = value
 
-    # Fallback: use DevArchAI trace-derived metrics if standard Micrometer series are missing.
+    # Fallback 1: request_duration_seconds format (Sock Shop / Go / Spring Boot 1.5.x style)
+    # These services expose `request_duration_seconds_{bucket,sum,count}` with a `service` label.
+    if not any_series:
+        generic_queries = {
+            "req_rate": "sum(rate(request_duration_seconds_count[5m])) by (service)",
+            "req_ko": "sum(rate(request_duration_seconds_count{status_code=~\"4..|5..\"}[5m])) by (service)",
+            "avg_rt": "sum(rate(request_duration_seconds_sum[5m])) by (service) / sum(rate(request_duration_seconds_count[5m])) by (service) * 1000",
+            "perc95_rt": "histogram_quantile(0.95, sum(rate(request_duration_seconds_bucket[5m])) by (le, service)) * 1000",
+        }
+        for metric_name, query in generic_queries.items():
+            series = _prom_query(base, query)
+            if series:
+                any_series = True
+            for service, value in series.items():
+                results.setdefault(service, {})[metric_name] = value
+
+    # Fallback 2: use DevArchAI trace-derived metrics if no standard series found.
     if not any_series:
         trace_queries = {
             "req_rate": "devarchai_trace_span_count",
@@ -119,14 +135,17 @@ def _prom_query(base_url: str, prom_query: str) -> Dict[str, float]:
     result = data.get("result", [])
     series: Dict[str, float] = {}
 
+    print(f"[TELEMETRY DEBUG] query={prom_query!r}  raw result count={len(result)}")
     for item in result:
         metric = item.get("metric", {})
         value = item.get("value", [])
+        print(f"[TELEMETRY DEBUG]   metric labels={metric}  raw_value={value}")
         service = _extract_service_label(metric)
         try:
             val = float(value[1]) if len(value) > 1 else 0.0
         except (TypeError, ValueError):
             val = 0.0
+        print(f"[TELEMETRY DEBUG]   -> resolved service={service!r}  val={val}")
         if service:
             series[service] = val
 
@@ -150,22 +169,47 @@ def _extract_service_label(metric: Dict[str, str]) -> Optional[str]:
             port = host_port.split(":")[-1]
             # A quick mapping for legacy train-ticket ports to service names
             train_ticket_port_map = {
-                "12340": "ts-auth-service",
-                "12342": "ts-user-service",
+                "8080":  "ts-ui-dashboard",
                 "11178": "ts-route-service",
-                "14567": "ts-train-service",
-                "12345": "ts-station-service",
+                "11188": "ts-security-service",
                 "12031": "ts-order-service",
                 "12032": "ts-order-other-service",
+                "12340": "ts-auth-service",
+                "12342": "ts-user-service",
+                "12345": "ts-station-service",
+                "12346": "ts-travel-service",
+                "12347": "ts-contacts-service",
+                "12386": "ts-execute-service",
+                "12862": "ts-news-service",
+                "14322": "ts-travel-plan-service",
+                "14567": "ts-train-service",
+                "14568": "ts-preserve-service",
+                "14569": "ts-preserve-other-service",
+                "14578": "ts-route-plan-service",
                 "15678": "ts-verification-code-service",
                 "15679": "ts-config-service",
                 "15680": "ts-basic-service",
                 "15681": "ts-ticketinfo-service",
+                "16101": "ts-voucher-service",
+                "16108": "ts-ticket-office-service",
+                "16110": "ts-consign-price-service",
+                "16111": "ts-consign-service",
+                "16112": "ts-admin-order-service",
+                "16113": "ts-admin-route-service",
+                "16114": "ts-admin-travel-service",
+                "16115": "ts-admin-user-service",
+                "16346": "ts-travel-service",
                 "16579": "ts-price-service",
                 "17853": "ts-notification-service",
-                "11188": "ts-security-service",
-                "14568": "ts-preserve-service",
-                "14569": "ts-preserve-other-service",
+                "18673": "ts-inside-payment-service",
+                "18767": "ts-admin-basic-info-service",
+                "18855": "ts-food-map-service",
+                "18856": "ts-food-service",
+                "18885": "ts-cancel-service",
+                "18886": "ts-rebook-service",
+                "18888": "ts-assurance-service",
+                "18898": "ts-seat-service",
+                "19001": "ts-payment-service",
             }
             return train_ticket_port_map.get(port, metric.get("job"))
 
