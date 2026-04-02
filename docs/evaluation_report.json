@@ -1,117 +1,91 @@
 {
   "dataset": "data\\csv\\structural_training_dataset.csv",
-  "rows": 209,
+  "rows": 217,
   "labels": {
-    "0": 153,
+    "0": 161,
     "1": 42,
     "2": 14
+  },
+  "model_params": {
+    "n_estimators": 100,
+    "max_depth": 15,
+    "min_samples_split": 2,
+    "class_weight": "balanced",
+    "pipeline": "StandardScaler + RandomForestClassifier"
+  },
+  "cross_validation": {
+    "strategy": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
+    "fold_scores": [0.8182, 0.8409, 0.9302, 0.9535, 0.9302],
+    "mean": 0.8946,
+    "std": 0.0543
   },
   "unified_model": "data\\models\\devarchai_unified_model.pkl",
   "baseline_model": "data\\models\\devarchai_structural_baseline.pkl",
   "unified": {
-    "accuracy": 0.7358490566037735,
+    "accuracy": 0.894,
     "classification_report": {
-      "0": {
-        "precision": 0.7358490566037735,
-        "recall": 1.0,
-        "f1-score": 0.8478260869565217,
-        "support": 39.0
+      "Low": {
+        "precision": 0.9244,
+        "recall": 0.9876,
+        "f1-score": 0.9550,
+        "support": 161
       },
-      "1": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1-score": 0.0,
-        "support": 11.0
+      "Medium": {
+        "precision": 0.8125,
+        "recall": 0.619,
+        "f1-score": 0.7027,
+        "support": 42
       },
-      "2": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1-score": 0.0,
-        "support": 3.0
+      "High": {
+        "precision": 0.6923,
+        "recall": 0.6429,
+        "f1-score": 0.6667,
+        "support": 14
       },
-      "accuracy": 0.7358490566037735,
+      "accuracy": 0.894,
       "macro avg": {
-        "precision": 0.2452830188679245,
-        "recall": 0.3333333333333333,
-        "f1-score": 0.2826086956521739,
-        "support": 53.0
+        "precision": 0.8097,
+        "recall": 0.7498,
+        "f1-score": 0.7748,
+        "support": 217
       },
       "weighted avg": {
-        "precision": 0.5414738341046635,
-        "recall": 0.7358490566037735,
-        "f1-score": 0.6238720262510253,
-        "support": 53.0
+        "precision": 0.8878,
+        "recall": 0.894,
+        "f1-score": 0.8875,
+        "support": 217
       }
     },
     "confusion_matrix": [
-      [
-        39,
-        0,
-        0
-      ],
-      [
-        11,
-        0,
-        0
-      ],
-      [
-        3,
-        0,
-        0
-      ]
+      [159, 2, 0],
+      [12, 26, 4],
+      [1, 4, 9]
     ]
   },
-  "baseline": {
-    "accuracy": 0.7358490566037735,
-    "classification_report": {
-      "0": {
-        "precision": 0.7358490566037735,
-        "recall": 1.0,
-        "f1-score": 0.8478260869565217,
-        "support": 39.0
-      },
-      "1": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1-score": 0.0,
-        "support": 11.0
-      },
-      "2": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1-score": 0.0,
-        "support": 3.0
-      },
-      "accuracy": 0.7358490566037735,
-      "macro avg": {
-        "precision": 0.2452830188679245,
-        "recall": 0.3333333333333333,
-        "f1-score": 0.2826086956521739,
-        "support": 53.0
-      },
-      "weighted avg": {
-        "precision": 0.5414738341046635,
-        "recall": 0.7358490566037735,
-        "f1-score": 0.6238720262510253,
-        "support": 53.0
-      }
-    },
-    "confusion_matrix": [
-      [
-        39,
-        0,
-        0
-      ],
-      [
-        11,
-        0,
-        0
-      ],
-      [
-        3,
-        0,
-        0
-      ]
-    ]
+  "feature_importances": {
+    "fan_in": 0.1853,
+    "closeness_centrality": 0.1114,
+    "in_degree_centrality": 0.1078,
+    "degree_centrality": 0.0988,
+    "is_gateway": 0.0858,
+    "out_degree_centrality": 0.0439,
+    "fault_impact_score": 0.0392,
+    "fan_out": 0.0356,
+    "anomaly_rate": 0.0332,
+    "reachable_services": 0.0302,
+    "betweenness_centrality": 0.0294,
+    "avg_affected_services": 0.0282,
+    "dependency_depth": 0.0264,
+    "avg_rt": 0.0178,
+    "req_rate": 0.0151,
+    "req_ok": 0.0136,
+    "req_ko": 0.0119,
+    "error_rate": 0.0115,
+    "avg_ok_rt": 0.0109,
+    "avg_ko_rt": 0.0107,
+    "perc95_rt": 0.0099,
+    "is_config_service": 0.0041,
+    "kaggle_anomaly_rate": 0.0036,
+    "fault_injection_count": 0.002
   }
 }
