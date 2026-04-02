@@ -67,7 +67,3 @@ and produces unified analysis results from a single DevArchAI model pipeline.
 
 - docs/  
   Architecture notes, demo material, and documentation
-
-## Train-Ticket Demo
-See `docs/train_ticket_demo.md` for a fast end-to-end demo using a subset of Train-Ticket services
-with Jaeger + Prometheus and Low/Medium/High architectural risk output.
