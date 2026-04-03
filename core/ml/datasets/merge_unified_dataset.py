@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 from typing import Dict, List
 import json
@@ -95,39 +96,60 @@ def _aggregate_cadvisor(ca_df: pd.DataFrame) -> Dict[str, float]:
     }
 
 
+def _rs_anomic_process_ca_dir(ca_dir: Path, rt_dir: Path, label: int, rows: List[Dict]) -> None:
+    """Process one cAdvisor directory (either flat normal dir or anomaly-type subdir)."""
+    for ca_file in ca_dir.glob("*.csv"):
+        service = ca_file.stem
+        rt_file = rt_dir / f"{service}.csv"
+        ca_df = pd.read_csv(ca_file)
+        ca_stats = _aggregate_cadvisor(ca_df)
+
+        if rt_file.exists():
+            rt_df = pd.read_csv(rt_file)
+            rt_stats = _aggregate_response_times(rt_df)
+        else:
+            rt_stats = {"avg_rt": 0.0, "req_rate": 0.0}
+
+        rows.append(
+            {
+                "risk_label": label,
+                "anomaly_rate": float(label),      # 1.0 for anomaly, 0.0 for normal
+                "error_rate": float(label),
+                "req_rate": rt_stats["req_rate"],
+                "avg_rt": rt_stats["avg_rt"],
+            }
+        )
+
+
 def load_rs_anomic(base: Path) -> pd.DataFrame:
+    """Load RS-Anomic RobotShop dataset.
+
+    Normal data: cAdvisor CSVs are flat files directly in normal/normal_data/cAdvisor/
+    Anomaly data: cAdvisor CSVs are one level deeper — one subdir per anomaly type
+                  (e.g. anomaly/anomaly_data/cAdvisor/high-cpu-dispatch/cart.csv)
+                  RT dirs use the convention {anomaly_type}_rt/
+    """
     root = base / "data" / "datasets" / "rs-anomic"
     if not root.exists():
         return pd.DataFrame()
 
     rows: List[Dict[str, float]] = []
-    for label_name, label in [("normal", 0), ("anomaly", 1)]:
-        cadvisor_dir = root / label_name / f"{label_name}_data" / "cAdvisor"
-        rt_dir = root / label_name / f"{label_name}_data" / "response_times"
-        if not cadvisor_dir.exists() or not rt_dir.exists():
-            continue
 
-        for ca_file in cadvisor_dir.glob("*.csv"):
-            service = ca_file.stem
-            rt_file = rt_dir / f"{service}.csv"
-            ca_df = pd.read_csv(ca_file)
-            ca_stats = _aggregate_cadvisor(ca_df)
+    # --- Normal: flat CSVs directly in cAdvisor/ ---
+    normal_ca = root / "normal" / "normal_data" / "cAdvisor"
+    normal_rt = root / "normal" / "normal_data" / "response_times"
+    if normal_ca.exists() and normal_rt.exists():
+        _rs_anomic_process_ca_dir(normal_ca, normal_rt, label=0, rows=rows)
 
-            if rt_file.exists():
-                rt_df = pd.read_csv(rt_file)
-                rt_stats = _aggregate_response_times(rt_df)
-            else:
-                rt_stats = {"avg_rt": 0.0, "req_rate": 0.0}
-
-            rows.append(
-                {
-                    "risk_label": label,
-                    "anomaly_rate": 0.0,
-                    "error_rate": 0.0,
-                    "req_rate": rt_stats["req_rate"],
-                    "avg_rt": rt_stats["avg_rt"],
-                }
-            )
+    # --- Anomaly: subdirs per anomaly type inside cAdvisor/ ---
+    anomaly_ca_root = root / "anomaly" / "anomaly_data" / "cAdvisor"
+    anomaly_rt_root = root / "anomaly" / "anomaly_data" / "response_times"
+    if anomaly_ca_root.exists() and anomaly_rt_root.exists():
+        for atype_dir in sorted(anomaly_ca_root.iterdir()):
+            if not atype_dir.is_dir():
+                continue
+            rt_subdir = anomaly_rt_root / f"{atype_dir.name}_rt"
+            _rs_anomic_process_ca_dir(atype_dir, rt_subdir, label=1, rows=rows)
 
     if not rows:
         return pd.DataFrame()
@@ -146,13 +168,36 @@ def _log_error_rate(lines: List[str]) -> float:
     return errors / len(lines)
 
 
+def _eadro_normalize_service(name: str) -> str:
+    """Strip Docker container prefixes and replica-index suffixes.
+
+    Fault files use Docker container names like:
+      SN:  socialnetwork-text-service-1
+      TT:  dockercomposemanifests_ts-food-service_1
+    Logs use bare service names like:
+      SN:  text-service
+      TT:  ts-food-service
+    """
+    for prefix in ("socialnetwork-", "dockercomposemanifests_"):
+        if name.startswith(prefix):
+            name = name[len(prefix):]
+            break
+    # Strip trailing replica index: -1, _1, -2, _2, etc.
+    name = re.sub(r"[-_]\d+$", "", name)
+    return name
+
+
 def _load_eadro_run(run_dir: Path, fault_file: Path, source: str) -> List[Dict[str, float]]:
     rows: List[Dict[str, float]] = []
     if not run_dir.exists() or not fault_file.exists():
         return rows
 
     faults = pd.read_json(fault_file).get("faults", [])
-    faulted_services = {f.get("name") for f in faults if isinstance(f, dict)}
+    # Normalize names so Docker container names match log service names
+    faulted_services = {
+        _eadro_normalize_service(f.get("name", ""))
+        for f in faults if isinstance(f, dict)
+    }
 
     logs_path = run_dir / "logs.json"
     metrics_dir = run_dir / "metrics"
