@@ -538,6 +538,71 @@ def load_thunderbird_logdatasets(base: Path) -> pd.DataFrame:
     return _finalize(df, "Thunderbird_logdatasets")
 
 
+def load_ad_microservice(base: Path) -> pd.DataFrame:
+    """Load Mohamed164/AD-microservice-app dataset.
+
+    Wide-format time-series: each row is a 1-minute timestep.
+    10 services (carts, catalogue, front-end, orders, payment,
+    queue-master, rabbitmq, session-db, shipping, user) each have
+    9 pre-computed metric columns (avg_rt, avg_ok_rt, avg_ko_rt,
+    perc95_rt, perc95_ok_rt, perc95_ko_rt, req_rate, req_ok, req_ko).
+    Overall anomaly label is in column 'anomaly' (0/1).
+
+    We pivot to long format: one row per (timestep, service).
+    """
+    root = base / "external-projects" / "ad-microservice-app"
+    if not root.exists():
+        return pd.DataFrame()
+
+    SERVICES = [
+        "carts", "catalogue", "front-end", "orders", "payment",
+        "queue-master", "rabbitmq", "session-db", "shipping", "user",
+    ]
+
+    frames: List[pd.DataFrame] = []
+    for date_dir in sorted(root.iterdir()):
+        if not date_dir.is_dir() or date_dir.name.startswith("."):
+            continue
+        metrics_path = date_dir / f"{date_dir.name}_metrics.csv"
+        if not metrics_path.exists():
+            continue
+
+        raw = pd.read_csv(metrics_path)
+        if "anomaly" not in raw.columns:
+            continue
+
+        for svc in SERVICES:
+            cols = {
+                "req_rate":  f"{svc}_req_rate",
+                "req_ok":    f"{svc}_req_ok",
+                "req_ko":    f"{svc}_req_ko",
+                "avg_rt":    f"{svc}_avg_rt",
+                "avg_ok_rt": f"{svc}_avg_ok_rt",
+                "avg_ko_rt": f"{svc}_avg_ko_rt",
+                "perc95_rt": f"{svc}_perc95_rt",
+            }
+            # Only proceed if at least one service column is present
+            present = [v for v in cols.values() if v in raw.columns]
+            if not present:
+                continue
+
+            sdf = pd.DataFrame()
+            sdf["risk_label"] = raw["anomaly"].fillna(0).astype(int)
+            for feat, col in cols.items():
+                sdf[feat] = raw[col].fillna(0.0) if col in raw.columns else 0.0
+
+            # Derived features
+            total = sdf["req_ok"] + sdf["req_ko"]
+            sdf["error_rate"]   = (sdf["req_ko"] / total.replace(0, np.nan)).fillna(0.0)
+            sdf["anomaly_rate"] = sdf["risk_label"].astype(float)
+            frames.append(sdf)
+
+    if not frames:
+        return pd.DataFrame()
+    df = pd.concat(frames, ignore_index=True)
+    return _finalize(df, "AD-Microservice")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Merge datasets into unified training schema")
     parser.add_argument("--out", default="data/csv/unified_training_dataset.csv")
@@ -562,6 +627,7 @@ def main() -> None:
         load_openstack_logdatasets(base),
         load_hadoop_logdatasets(base),
         load_openstack_paris_logdatasets(base),
+        load_ad_microservice(base),
     ]
     if args.include_thunderbird:
         frames.append(load_thunderbird_logdatasets(base))

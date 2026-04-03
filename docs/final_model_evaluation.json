@@ -1,56 +1,48 @@
 {
-  "experiment": "Final Clean Experiment",
-  "dataset": "data/csv/structural_training_dataset.csv",
-  "rows": 253,
+  "experiment": "DevArchAI Final Evaluation \u2014 post dataset integration",
+  "date": "2026-04-03",
+  "dataset": "data/csv/unified_structural_telemetry_dataset.csv",
+  "rows": 1265,
   "projects": 25,
-  "augmentation": "none",
-  "telemetry": "generated from graph structure + label (same formula as Exp C, seed=42)",
-  "split": "project-level 80/20",
+  "label_distribution": {
+    "Low": 960,
+    "Medium": 215,
+    "High": 90
+  },
+  "train_rows": 1020,
+  "test_rows": 245,
   "train_projects": [
-    "Blog_Microservices",
     "CQRS_microservice_application",
     "Consul_demo",
     "DevArchAI",
     "E-Commerce",
     "EnterprisePlanner",
-    "Lakeside",
+    "FTGO",
+    "HotelReservation",
     "Leylan_Open_Source_Internet_of_Things",
-    "OnlineBoutique",
+    "Microservices_book",
     "Open-loyalty",
     "OtelDemo",
+    "Pitstop_Garage_Management_System",
     "Robot_Shop",
-    "ShareBike",
     "SockShop",
     "Spinnaker",
+    "Tap-And-Eat-MicroServices",
     "Vehicle-Tracking",
     "eShopOnContainers",
     "spring-cloud-microservice",
-    "spring-cloud-netflix",
     "spring-petclinic"
   ],
   "test_projects": [
-    "FTGO",
-    "HotelReservation",
-    "Microservices_book",
-    "Pitstop_Garage_Management_System",
-    "Tap-And-Eat-MicroServices"
+    "Blog_Microservices",
+    "Lakeside",
+    "OnlineBoutique",
+    "ShareBike",
+    "spring-cloud-netflix"
   ],
-  "train_rows": 204,
-  "test_rows": 49,
-  "train_dist": {
-    "Low": 151,
-    "Medium": 37,
-    "High": 16
-  },
-  "test_dist": {
-    "Low": 41,
-    "Medium": 6,
-    "High": 2
-  },
   "rf_params": {
-    "n_estimators": 100,
-    "max_depth": 15,
-    "min_samples_split": 2,
+    "n_estimators": 200,
+    "max_depth": null,
     "class_weight": "balanced",
     "random_state": 42,
     "n_jobs": -1
@@ -69,8 +61,6 @@
       "reachable_services",
       "is_gateway",
       "is_config_service",
-      "anomaly_rate",
-      "kaggle_anomaly_rate",
       "fault_injection_count",
       "avg_affected_services",
       "fault_impact_score",
@@ -81,93 +71,108 @@
       "req_rate",
       "req_ok",
       "req_ko",
-      "error_rate"
+      "error_rate",
+      "anomaly_rate",
+      "kaggle_anomaly_rate"
     ],
-    "holdout_accuracy": 1.0,
-    "holdout_high_f1": 1.0,
-    "holdout_macro_f1": 1.0,
-    "per_class_holdout": {
-      "Low": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0
+    "holdout": {
+      "accuracy": 0.9592,
+      "macro_f1": 0.9361,
+      "high_f1": 1.0,
+      "per_class": {
+        "Low": {
+          "precision": 0.9512,
+          "recall": 1.0,
+          "f1-score": 0.975
+        },
+        "Medium": {
+          "precision": 1.0,
+          "recall": 0.7143,
+          "f1-score": 0.8333
+        },
+        "High": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0
+        }
       },
-      "Medium": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0
-      },
-      "High": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0
-      }
-    },
-    "confusion_matrix_holdout": [
-      [
-        41,
-        0,
-        0
-      ],
-      [
-        0,
-        6,
-        0
-      ],
-      [
-        0,
-        0,
-        2
+      "confusion_matrix": [
+        [
+          195,
+          0,
+          0
+        ],
+        [
+          10,
+          25,
+          0
+        ],
+        [
+          0,
+          0,
+          15
+        ]
       ]
-    ],
-    "cv_accuracy_mean": 0.9961,
-    "cv_accuracy_std": 0.0078,
-    "cv_accuracy_folds": [
-      1.0,
-      0.9804,
-      1.0,
-      1.0,
-      1.0
-    ],
-    "cv_macro_f1_mean": 0.9866,
-    "cv_macro_f1_std": 0.0269,
-    "cv_macro_f1_folds": [
-      1.0,
-      0.9328,
-      1.0,
-      1.0,
-      1.0
-    ],
-    "cv_high_f1": 0.9714,
+    },
+    "cv_5fold": {
+      "accuracy_mean": 0.9897,
+      "accuracy_std": 0.0069,
+      "accuracy_folds": [
+        0.9921,
+        0.9802,
+        0.9842,
+        1.0,
+        0.9921
+      ],
+      "macro_f1_mean": 0.9824,
+      "macro_f1_std": 0.0139,
+      "macro_f1_folds": [
+        0.9905,
+        0.9582,
+        0.981,
+        1.0,
+        0.982
+      ],
+      "high_f1_cv": 0.9831
+    },
+    "lopo_cv": {
+      "accuracy_mean": 0.8835,
+      "accuracy_std": 0.1842,
+      "macro_f1_mean": 0.7786,
+      "macro_f1_std": 0.252,
+      "high_f1_mean": 0.3124,
+      "high_f1_std": 0.4316
+    },
     "feature_importances": {
-      "kaggle_anomaly_rate": 0.2634,
-      "anomaly_rate": 0.2315,
-      "error_rate": 0.1802,
-      "req_ko": 0.0872,
-      "avg_rt": 0.0316,
-      "avg_ko_rt": 0.0226,
-      "avg_ok_rt": 0.022,
-      "req_rate": 0.0216,
-      "req_ok": 0.0183,
-      "fan_in": 0.0175,
-      "perc95_rt": 0.0166,
-      "is_gateway": 0.015,
-      "closeness_centrality": 0.0118,
-      "out_degree_centrality": 0.0114,
-      "degree_centrality": 0.011,
-      "in_degree_centrality": 0.0092,
-      "avg_affected_services": 0.0085,
-      "fault_impact_score": 0.0078,
-      "betweenness_centrality": 0.0041,
-      "reachable_services": 0.0031,
-      "dependency_depth": 0.0028,
-      "fault_injection_count": 0.0015,
-      "fan_out": 0.0014,
-      "is_config_service": 0.0
-    }
+      "is_gateway": 0.0976,
+      "avg_ok_rt": 0.0864,
+      "avg_rt": 0.0723,
+      "fan_in": 0.0711,
+      "perc95_rt": 0.065,
+      "req_rate": 0.0642,
+      "req_ko": 0.0637,
+      "avg_ko_rt": 0.0619,
+      "req_ok": 0.0468,
+      "out_degree_centrality": 0.0406,
+      "error_rate": 0.0385,
+      "degree_centrality": 0.0365,
+      "in_degree_centrality": 0.035,
+      "reachable_services": 0.0303,
+      "closeness_centrality": 0.03,
+      "anomaly_rate": 0.0295,
+      "fault_impact_score": 0.0256,
+      "avg_affected_services": 0.0252,
+      "fan_out": 0.02,
+      "kaggle_anomaly_rate": 0.0199,
+      "dependency_depth": 0.018,
+      "betweenness_centrality": 0.0131,
+      "fault_injection_count": 0.0077,
+      "is_config_service": 0.001
+    },
+    "model_path": "data/models/devarchai_unified_model.pkl"
   },
-  "baseline_model": {
-    "n_features": 16,
+  "structural_model": {
+    "n_features": 11,
     "features": [
       "fan_in",
       "fan_out",
@@ -179,75 +184,203 @@
       "dependency_depth",
       "reachable_services",
       "is_gateway",
-      "is_config_service",
-      "anomaly_rate",
-      "kaggle_anomaly_rate",
-      "fault_injection_count",
-      "avg_affected_services",
-      "fault_impact_score"
+      "is_config_service"
     ],
-    "holdout_accuracy": 1.0,
-    "holdout_high_f1": 1.0,
-    "holdout_macro_f1": 1.0,
-    "per_class_holdout": {
-      "Low": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0
+    "holdout": {
+      "accuracy": 0.8939,
+      "macro_f1": 0.7295,
+      "high_f1": 0.5,
+      "per_class": {
+        "Low": {
+          "precision": 0.93,
+          "recall": 0.9538,
+          "f1-score": 0.9418
+        },
+        "Medium": {
+          "precision": 0.7,
+          "recall": 0.8,
+          "f1-score": 0.7467
+        },
+        "High": {
+          "precision": 1.0,
+          "recall": 0.3333,
+          "f1-score": 0.5
+        }
       },
-      "Medium": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0
-      },
-      "High": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0
-      }
-    },
-    "confusion_matrix_holdout": [
-      [
-        41,
-        0,
-        0
-      ],
-      [
-        0,
-        6,
-        0
-      ],
-      [
-        0,
-        0,
-        2
+      "confusion_matrix": [
+        [
+          186,
+          9,
+          0
+        ],
+        [
+          7,
+          28,
+          0
+        ],
+        [
+          7,
+          3,
+          5
+        ]
       ]
-    ],
-    "cv_accuracy_mean": 0.9882,
-    "cv_accuracy_std": 0.0157,
-    "cv_accuracy_folds": [
-      0.9608,
-      0.9804,
-      1.0,
-      1.0,
-      1.0
-    ],
-    "cv_macro_f1_mean": 0.9754,
-    "cv_macro_f1_std": 0.0304,
-    "cv_macro_f1_folds": [
-      0.944,
-      0.9328,
-      1.0,
-      1.0,
-      1.0
-    ],
-    "cv_high_f1": 0.9714
+    },
+    "cv_5fold": {
+      "accuracy_mean": 0.9455,
+      "accuracy_std": 0.0098,
+      "accuracy_folds": [
+        0.9328,
+        0.9605,
+        0.9407,
+        0.9526,
+        0.9407
+      ],
+      "macro_f1_mean": 0.8974,
+      "macro_f1_std": 0.026,
+      "macro_f1_folds": [
+        0.8527,
+        0.9317,
+        0.8929,
+        0.9105,
+        0.8993
+      ],
+      "high_f1_cv": 0.8434
+    },
+    "lopo_cv": {
+      "accuracy_mean": 0.865,
+      "accuracy_std": 0.1246,
+      "macro_f1_mean": 0.6848,
+      "macro_f1_std": 0.2484,
+      "high_f1_mean": 0.1822,
+      "high_f1_std": 0.3309
+    },
+    "model_path": "data/models/devarchai_structural_baseline.pkl"
   },
   "verdict": {
-    "unified_wins_macro_f1": false,
-    "holdout_macro_f1_delta": 0.0,
-    "holdout_high_f1_delta": 0.0,
-    "cv_macro_f1_delta": 0.0112,
-    "model_saved": false
+    "unified_wins_macro_f1": true,
+    "holdout_acc_delta": 0.0653,
+    "holdout_macro_f1_delta": 0.2066,
+    "holdout_high_f1_delta": 0.5,
+    "cv_acc_delta": 0.0443,
+    "cv_macro_f1_delta": 0.0849,
+    "lopo_acc_delta": 0.0185,
+    "lopo_macro_f1_delta": 0.0938,
+    "lopo_high_f1_delta": 0.1302
+  },
+  "dataset_statistics": {
+    "unified_training_dataset": {
+      "path": "data/csv/unified_training_dataset.csv",
+      "total_rows": 372686,
+      "normal_rows": 315205,
+      "anomaly_rows": 57481,
+      "anomaly_pct": 15.4,
+      "sources": {
+        "AD-Microservice": {
+          "total": 201610,
+          "normal": 184020,
+          "anomaly": 17590,
+          "anom_pct": 8.7
+        },
+        "HDFS_v1": {
+          "total": 100000,
+          "normal": 97393,
+          "anomaly": 2607,
+          "anom_pct": 2.6
+        },
+        "HDFS_logdatasets": {
+          "total": 10000,
+          "normal": 5000,
+          "anomaly": 5000,
+          "anom_pct": 50.0
+        },
+        "HDFS_LogHub_logdatasets": {
+          "total": 10000,
+          "normal": 5000,
+          "anomaly": 5000,
+          "anom_pct": 50.0
+        },
+        "HDFS_Xu_logdatasets": {
+          "total": 10000,
+          "normal": 5000,
+          "anomaly": 5000,
+          "anom_pct": 50.0
+        },
+        "BGL_logdatasets": {
+          "total": 10000,
+          "normal": 5000,
+          "anomaly": 5000,
+          "anom_pct": 50.0
+        },
+        "BGL_CFDR_logdatasets": {
+          "total": 10000,
+          "normal": 5000,
+          "anomaly": 5000,
+          "anom_pct": 50.0
+        },
+        "Thunderbird_logdatasets": {
+          "total": 5839,
+          "normal": 1530,
+          "anomaly": 4309,
+          "anom_pct": 73.8
+        },
+        "OpenStackParis_logdatasets": {
+          "total": 5546,
+          "normal": 4895,
+          "anomaly": 651,
+          "anom_pct": 11.7
+        },
+        "LO2": {
+          "total": 5400,
+          "normal": 100,
+          "anomaly": 5300,
+          "anom_pct": 98.1
+        },
+        "OpenStack_logdatasets": {
+          "total": 2050,
+          "normal": 1852,
+          "anomaly": 198,
+          "anom_pct": 9.7
+        },
+        "Hadoop_logdatasets": {
+          "total": 1772,
+          "normal": 150,
+          "anomaly": 1622,
+          "anom_pct": 91.5
+        },
+        "Eadro": {
+          "total": 291,
+          "normal": 253,
+          "anomaly": 38,
+          "anom_pct": 13.1
+        },
+        "RS-Anomic": {
+          "total": 178,
+          "normal": 12,
+          "anomaly": 166,
+          "anom_pct": 93.3
+        }
+      }
+    },
+    "structural_training_dataset": {
+      "path": "data/csv/structural_training_dataset.csv",
+      "total_rows": 253,
+      "projects": 25,
+      "label_distribution": {
+        "Low": 192,
+        "Medium": 43,
+        "High": 18
+      }
+    },
+    "unified_structural_telemetry_dataset": {
+      "path": "data/csv/unified_structural_telemetry_dataset.csv",
+      "total_rows": 1265,
+      "projects": 25,
+      "note": "253 original x5 augmented with feature-aware noise",
+      "label_distribution": {
+        "Low": 960,
+        "Medium": 215,
+        "High": 90
+      }
+    }
   }
 }
