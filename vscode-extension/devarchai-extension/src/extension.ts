@@ -75,6 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
           const cicdPath = await vscode.window.showInputBox({
             prompt: 'Optional CI/CD JSON path for optimization (leave empty to skip)',
             placeHolder: 'e.g. D:\\cicd\\run.json',
+            value: 'data/samples/cicd/train-ticket_fudanselab_gha_run_19560083141.json',
             ignoreFocusOut: true
           });
           if (cicdPath) {

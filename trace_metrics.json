@@ -1,0 +1,262 @@
+{
+  "services": {
+    "ts-admin-basic-info-service": {
+      "span_count": 312,
+      "trace_error_rate": 0.08,
+      "avg_trace_ms": 145,
+      "p95_trace_ms": 380
+    },
+    "ts-admin-order-service": {
+      "span_count": 98,
+      "trace_error_rate": 0.03,
+      "avg_trace_ms": 112,
+      "p95_trace_ms": 210
+    },
+    "ts-admin-route-service": {
+      "span_count": 54,
+      "trace_error_rate": 0.01,
+      "avg_trace_ms": 89,
+      "p95_trace_ms": 170
+    },
+    "ts-admin-travel-service": {
+      "span_count": 63,
+      "trace_error_rate": 0.02,
+      "avg_trace_ms": 95,
+      "p95_trace_ms": 185
+    },
+    "ts-admin-user-service": {
+      "span_count": 77,
+      "trace_error_rate": 0.04,
+      "avg_trace_ms": 108,
+      "p95_trace_ms": 220
+    },
+    "ts-assurance-service": {
+      "span_count": 41,
+      "trace_error_rate": 0.01,
+      "avg_trace_ms": 72,
+      "p95_trace_ms": 140
+    },
+    "ts-auth-service": {
+      "span_count": 520,
+      "trace_error_rate": 0.05,
+      "avg_trace_ms": 68,
+      "p95_trace_ms": 150
+    },
+    "ts-basic-service": {
+      "span_count": 284,
+      "trace_error_rate": 0.06,
+      "avg_trace_ms": 130,
+      "p95_trace_ms": 290
+    },
+    "ts-cancel-service": {
+      "span_count": 156,
+      "trace_error_rate": 0.07,
+      "avg_trace_ms": 198,
+      "p95_trace_ms": 450
+    },
+    "ts-common": {
+      "span_count": 88,
+      "trace_error_rate": 0.01,
+      "avg_trace_ms": 45,
+      "p95_trace_ms": 90
+    },
+    "ts-config-service": {
+      "span_count": 112,
+      "trace_error_rate": 0.01,
+      "avg_trace_ms": 52,
+      "p95_trace_ms": 100
+    },
+    "ts-consign-price-service": {
+      "span_count": 67,
+      "trace_error_rate": 0.02,
+      "avg_trace_ms": 88,
+      "p95_trace_ms": 175
+    },
+    "ts-consign-service": {
+      "span_count": 73,
+      "trace_error_rate": 0.02,
+      "avg_trace_ms": 102,
+      "p95_trace_ms": 200
+    },
+    "ts-contacts-service": {
+      "span_count": 145,
+      "trace_error_rate": 0.03,
+      "avg_trace_ms": 95,
+      "p95_trace_ms": 190
+    },
+    "ts-execute-service": {
+      "span_count": 189,
+      "trace_error_rate": 0.04,
+      "avg_trace_ms": 165,
+      "p95_trace_ms": 360
+    },
+    "ts-food-map-service": {
+      "span_count": 38,
+      "trace_error_rate": 0.01,
+      "avg_trace_ms": 78,
+      "p95_trace_ms": 155
+    },
+    "ts-food-service": {
+      "span_count": 49,
+      "trace_error_rate": 0.02,
+      "avg_trace_ms": 85,
+      "p95_trace_ms": 165
+    },
+    "ts-inside-payment-service": {
+      "span_count": 203,
+      "trace_error_rate": 0.05,
+      "avg_trace_ms": 175,
+      "p95_trace_ms": 380
+    },
+    "ts-news-service": {
+      "span_count": 29,
+      "trace_error_rate": 0.01,
+      "avg_trace_ms": 62,
+      "p95_trace_ms": 120
+    },
+    "ts-notification-service": {
+      "span_count": 91,
+      "trace_error_rate": 0.03,
+      "avg_trace_ms": 58,
+      "p95_trace_ms": 115
+    },
+    "ts-order-other-service": {
+      "span_count": 267,
+      "trace_error_rate": 0.06,
+      "avg_trace_ms": 142,
+      "p95_trace_ms": 310
+    },
+    "ts-order-service": {
+      "span_count": 485,
+      "trace_error_rate": 0.07,
+      "avg_trace_ms": 185,
+      "p95_trace_ms": 420
+    },
+    "ts-payment-service": {
+      "span_count": 218,
+      "trace_error_rate": 0.04,
+      "avg_trace_ms": 160,
+      "p95_trace_ms": 345
+    },
+    "ts-preserve-other-service": {
+      "span_count": 134,
+      "trace_error_rate": 0.03,
+      "avg_trace_ms": 118,
+      "p95_trace_ms": 240
+    },
+    "ts-preserve-service": {
+      "span_count": 178,
+      "trace_error_rate": 0.05,
+      "avg_trace_ms": 155,
+      "p95_trace_ms": 335
+    },
+    "ts-price-service": {
+      "span_count": 321,
+      "trace_error_rate": 0.08,
+      "avg_trace_ms": 128,
+      "p95_trace_ms": 275
+    },
+    "ts-rebook-service": {
+      "span_count": 82,
+      "trace_error_rate": 0.04,
+      "avg_trace_ms": 175,
+      "p95_trace_ms": 390
+    },
+    "ts-route-plan-service": {
+      "span_count": 195,
+      "trace_error_rate": 0.04,
+      "avg_trace_ms": 205,
+      "p95_trace_ms": 460
+    },
+    "ts-route-service": {
+      "span_count": 243,
+      "trace_error_rate": 0.03,
+      "avg_trace_ms": 115,
+      "p95_trace_ms": 235
+    },
+    "ts-seat-service": {
+      "span_count": 352,
+      "trace_error_rate": 0.05,
+      "avg_trace_ms": 138,
+      "p95_trace_ms": 295
+    },
+    "ts-security-service": {
+      "span_count": 411,
+      "trace_error_rate": 0.02,
+      "avg_trace_ms": 72,
+      "p95_trace_ms": 145
+    },
+    "ts-station-service": {
+      "span_count": 398,
+      "trace_error_rate": 0.04,
+      "avg_trace_ms": 122,
+      "p95_trace_ms": 255
+    },
+    "ts-ticket-office-service": {
+      "span_count": 57,
+      "trace_error_rate": 0.02,
+      "avg_trace_ms": 92,
+      "p95_trace_ms": 185
+    },
+    "ts-ticketinfo-service": {
+      "span_count": 145,
+      "trace_error_rate": 0.03,
+      "avg_trace_ms": 105,
+      "p95_trace_ms": 215
+    },
+    "ts-train-service": {
+      "span_count": 276,
+      "trace_error_rate": 0.03,
+      "avg_trace_ms": 118,
+      "p95_trace_ms": 245
+    },
+    "ts-travel-plan-service": {
+      "span_count": 222,
+      "trace_error_rate": 0.05,
+      "avg_trace_ms": 210,
+      "p95_trace_ms": 475
+    },
+    "ts-travel-service": {
+      "span_count": 467,
+      "trace_error_rate": 0.06,
+      "avg_trace_ms": 178,
+      "p95_trace_ms": 395
+    },
+    "ts-travel2-service": {
+      "span_count": 189,
+      "trace_error_rate": 0.04,
+      "avg_trace_ms": 162,
+      "p95_trace_ms": 345
+    },
+    "ts-ui-dashboard": {
+      "span_count": 635,
+      "trace_error_rate": 0.02,
+      "avg_trace_ms": 85,
+      "p95_trace_ms": 180
+    },
+    "ts-ui-test": {
+      "span_count": 44,
+      "trace_error_rate": 0.0,
+      "avg_trace_ms": 55,
+      "p95_trace_ms": 110
+    },
+    "ts-user-service": {
+      "span_count": 388,
+      "trace_error_rate": 0.03,
+      "avg_trace_ms": 98,
+      "p95_trace_ms": 200
+    },
+    "ts-verification-code-service": {
+      "span_count": 156,
+      "trace_error_rate": 0.02,
+      "avg_trace_ms": 48,
+      "p95_trace_ms": 95
+    },
+    "ts-voucher-service": {
+      "span_count": 65,
+      "trace_error_rate": 0.02,
+      "avg_trace_ms": 88,
+      "p95_trace_ms": 175
+    }
+  }
+}

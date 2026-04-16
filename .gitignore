@@ -59,7 +59,7 @@ prometheus/
 # ----------------------
 # Local telemetry test artifacts
 # ----------------------
-trace_metrics.json
+# trace_metrics.json is committed as a static demo fixture (train-ticket pre-captured data)
 
 # ----------------------
 # Local runtime logs
