@@ -214,6 +214,22 @@
     cicdPanel.innerHTML = cards;
   }
 
+  debugStage = 'improvements-block';
+  const improvementsPanel = document.getElementById('improvements-panel');
+  const improvements = Array.isArray(data.improvements) ? data.improvements : [];
+  if (improvementsPanel) {
+    if (!improvements.length) {
+      improvementsPanel.innerHTML = '<p style="color:var(--muted);font-size:13px;">No improvement suggestions available.</p>';
+    } else {
+      improvementsPanel.innerHTML = improvements.map((s, i) => `
+        <div class="card" style="margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--accent-2);font-size:15px;font-weight:700;flex-shrink:0;line-height:1.4;">${i + 1}.</span>
+          <span style="font-size:13px;color:#dde6ff;line-height:1.5;">${s}</span>
+        </div>
+      `).join('');
+    }
+  }
+
   function updateHero(list) {
     const top = list && list.length ? list[0] : null;
     const topLevel = top ? resolveRiskLevel(top) : -1;
@@ -576,7 +592,8 @@
             ? `<div style="font-size:11px;color:#c8d4f1;">Showing ${matches.length} matching services:</div>${matches.map(m => `<div style="padding:3px 0;${m.selected ? 'font-weight:700;color:#ffffff;' : 'color:#a4b0c8;'}">${m.id}</div>`).join('')}`
             : '<div style="color:#f1adad;font-size:11px;">No matching services found.</div>';
         } else {
-          serviceList.innerHTML = `<div style="font-size:11px;color:#c8d4f1;">All services (${nodeData.length}):</div>${nodeData.slice(0, 50).map(n => `<div style="padding:3px 0;${n.id === selectedNode ? 'font-weight:700;color:#ffffff;' : 'color:#a4b0c8;'}">${n.id}</div>`).join('')}${nodeData.length > 50 ? '<div style="padding-top:4px;color:#8899b7;font-size:11px;">...more...</div>' : ''}`;
+          const dotColor = (risk) => risk === 2 ? '#ff6b6b' : risk === 1 ? '#ffb347' : risk === 0 ? '#3ddc97' : '#7c5cff';
+          serviceList.innerHTML = `<div style="font-size:11px;color:#c8d4f1;">All services (${nodeData.length}):</div>${nodeData.slice(0, 50).map(n => `<div style="padding:2px 0;display:flex;align-items:center;gap:6px;${n.id === selectedNode ? 'font-weight:700;color:#ffffff;' : 'color:#a4b0c8;'}"><span style="width:7px;height:7px;border-radius:50%;background:${dotColor(n.risk)};flex-shrink:0;display:inline-block;"></span>${n.id}</div>`).join('')}${nodeData.length > 50 ? '<div style="padding-top:4px;color:#8899b7;font-size:11px;">...more...</div>' : ''}`;
         }
       }
 

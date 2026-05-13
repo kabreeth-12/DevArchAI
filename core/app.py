@@ -293,7 +293,9 @@ def analyse_project(request: AnalyseRequest):
     # Step 7: Generate improvement suggestions
     improvements = generate_improvements(
         services=services,
-        dependency_count=len(graph.get_edges())
+        dependency_count=len(graph.get_edges()),
+        risk_analysis=risk_analysis,
+        service_features=service_features,
     )
 
     # Step 8: Serialize dependency graph for frontend
@@ -332,18 +334,36 @@ def analyse_project(request: AnalyseRequest):
             rca_references = []
             rca_llm_used = False
 
-    # Step 10: Return unified response
+    # Step 10: Build dynamic explanation and select root cause by centrality
+    _high_count = sum(1 for r in risk_analysis if r.get("predicted_risk_level") == 2)
+    _med_count = sum(1 for r in risk_analysis if r.get("predicted_risk_level") == 1)
+    explanation = (
+        f"{len(services)} microservices analysed via the DevArchAI Unified Model "
+        f"combining dependency structure, centrality metrics, and fault impact indicators."
+    )
+    if _high_count:
+        explanation += f" {_high_count} service(s) flagged as High risk."
+    if _med_count:
+        explanation += f" {_med_count} service(s) flagged as Medium risk."
+    if telemetry_features:
+        explanation += " Telemetry augmentation active — trace metrics integrated."
+
+    suspected_root_cause = (
+        max(
+            risk_analysis,
+            key=lambda r: (
+                r.get("predicted_risk_level", 0),
+                service_features.get(r.get("service", ""), {}).get("betweenness_centrality", 0.0)
+            )
+        )["service"]
+        if risk_analysis else "unknown"
+    )
+
     response_payload = AnalyseResponse(
         project_path=request.project_path,
         detected_services=services,
-        suspected_root_cause=(
-            risk_analysis[0]["service"] if risk_analysis else "unknown"
-        ),
-        explanation=(
-            "Architectural risk predicted using the DevArchAI Unified Model "
-            "that combines dependency structure, telemetry signals, and "
-            "fault impact indicators within a single reasoning pipeline."
-        ),
+        suspected_root_cause=suspected_root_cause,
+        explanation=explanation,
         rca_summary=rca_summary,
         rca_confidence=rca_confidence,
         rca_references=rca_references,

@@ -141,17 +141,14 @@ def _prom_query(base_url: str, prom_query: str) -> Dict[str, float]:
     result = data.get("result", [])
     series: Dict[str, float] = {}
 
-    print(f"[TELEMETRY DEBUG] query={prom_query!r}  raw result count={len(result)}")
     for item in result:
         metric = item.get("metric", {})
         value = item.get("value", [])
-        print(f"[TELEMETRY DEBUG]   metric labels={metric}  raw_value={value}")
         service = _extract_service_label(metric)
         try:
             val = float(value[1]) if len(value) > 1 else 0.0
         except (TypeError, ValueError):
             val = 0.0
-        print(f"[TELEMETRY DEBUG]   -> resolved service={service!r}  val={val}")
         if service:
             series[service] = val
 
