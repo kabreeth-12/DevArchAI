@@ -239,6 +239,17 @@ def analyse_project(request: AnalyseRequest):
         except Exception:
             pass
 
+    # Fallback: if remote telemetry returned no matching service keys, read local trace_metrics.json
+    if not any(k in set(services) for k in telemetry_features):
+        _local_tm = Path("trace_metrics.json")
+        if _local_tm.exists():
+            try:
+                local_traces = fetch_traces_otel(str(_local_tm))
+                for svc, feats in local_traces.items():
+                    telemetry_features.setdefault(svc, {}).update(feats)
+            except Exception:
+                pass
+
     # Normalize telemetry keys to match detected services
     if telemetry_features:
         normalized = {}

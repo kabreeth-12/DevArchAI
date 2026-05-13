@@ -89,14 +89,20 @@ def fetch_traces_otel(otel_endpoint: str) -> Dict[str, Dict[str, float]]:
     """
     Query OpenTelemetry or a trace backend (Jaeger/Tempo).
     Return per-service trace metrics like latency, error_rate, span_count.
+    Accepts HTTP(S) URLs or local file paths.
     """
     # Generic JSON endpoint support:
     # Expecting a response shaped like:
     # { "services": { "svcA": {"span_count": 10, "trace_error_rate": 0.02, "p95_trace_ms": 120}, ... } }
     # or directly { "svcA": {...}, "svcB": {...} }
     try:
-        with urllib.request.urlopen(otel_endpoint, timeout=10) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
+        ep = otel_endpoint.strip()
+        if ep.startswith(("http://", "https://")):
+            with urllib.request.urlopen(ep, timeout=10) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+        else:
+            with open(ep, encoding="utf-8") as f:
+                payload = json.loads(f.read())
     except Exception:
         return {}
 
